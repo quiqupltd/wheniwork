@@ -71,7 +71,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                type: object
+                properties:
+                  login:
+                    $ref: '#/components/schemas/Login'
+                  token:
+                    type: string
+                  accounts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Account'
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
         '404': *not_found_response
         default: *default_response
 
@@ -621,19 +634,3 @@ components:
               type: integer
         token:
           type: string
-
-    LoginResponse:
-      type: object
-      properties:
-        login:
-          $ref: '#/components/schemas/Login'
-        token:
-          type: string
-        accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Account'
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
