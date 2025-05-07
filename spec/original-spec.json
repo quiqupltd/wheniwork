@@ -7455,19 +7455,19 @@
           },
           "week": {
             "description": "Represents the week frequency interval. `1` means weekly, `2` means every two weeks, etc.\n\n**NOTE**: This is required when _creating_ a repeating shift. It may be omitted when editing one.\n",
-            "type": "int",
+            "type": "integer",
             "example": 2
           },
           "weekdays": {
             "description": "A bitmask of the weekdays which shifts in this chain occur on. In a seven-bit binary number, the most\nsignificant bit represents Sunday and the least significant bit represents Monday (0b1000001).\n\nExamples:\n| Days                      | Binary      | Decimal |\n|---------------------------|-------------|---------|\n| Monday through Friday     | `0b0011111` | 31      |\n| Monday, Wednesday, Friday | `0b0010101` | 21      |\n| Saturday and Sunday       | `0b1100000` | 96      |\n",
-            "type": "int",
+            "type": "integer",
             "example": 31
           },
           "timezone_id": {
             "description": "The timezone this chain is built in.\n\nThis must be either the `timezone_id` or `olson_id` from one of the timezones available through\n[this endpoint](#tag/Timezones).\n",
             "type": [
               "string",
-              "int"
+              "integer"
             ],
             "example": "America/Chicago"
           }
@@ -8053,7 +8053,7 @@
             "example": "Mon, 08 May 2023 14:30:00 -0600"
           },
           "break_time": {
-            "type": "double",
+            "type": "number",
             "example": 0.5
           },
           "color": {

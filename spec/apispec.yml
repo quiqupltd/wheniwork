@@ -1,0 +1,429 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: When I Work API Documentation
+  description: The When I Work API is thorough, flexible, and restful.
+
+servers:
+  - url: https://api.wheniwork.com
+    description: Production
+
+security:
+  - W-Token: []
+
+tags: []
+
+paths:
+  /2/shifts:
+    get:
+      summary: List Shifts
+      description: Fetch a list of shifts based on a set of filters
+      tags:
+        - Shifts
+      parameters:
+        - name: user_id
+          in: query
+          description: The user id to filter by
+          required: false
+          schema:
+            type: integer
+        - name: start
+          in: query
+          description: The start of the filter range.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            default: now
+        - name: end
+          in: query
+          description: The end of the filter range.
+          required: false
+          schema:
+            type: string
+        - name: unpublished
+          in: query
+          description: Whether or not to include unpublished shifts. Requires supervisor rights.
+          required: false
+          schema:
+            type: boolean
+        - name: include_open
+          in: query
+          description: Whether or not to include open shifts from the user's assigned Schedules.
+          required: false
+          schema:
+            type: boolean
+        - name: include_onlyopen
+          in: query
+          description: Whether or not to include only open shifts from the user's assigned Schedules.
+          required: false
+          schema:
+            type: boolean
+        - name: include_allopen
+          in: query
+          description: Whether or to include open shifts across All Schedules. Requires "Manager or Admin access" level.
+          required: false
+          schema:
+            type: boolean
+        - name: deleted
+          in: query
+          description: Whether to include a list of shift IDs ("deleted_ids") that were deleted during the passed time window.
+          required: false
+          schema:
+            type: boolean
+        - name: include_swaps
+          in: query
+          description: Whether or not to include swap requests.
+          required: false
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          description: Maximum number of results to return.
+          required: false
+          schema:
+            type: integer
+        - name: all_locations
+          in: query
+          description: Whether to include data from all locations. Shifts are marked as "readonly" if not a manager user.
+          required: false
+          schema:
+            type: boolean
+        - name: location_id
+          in: query
+          description: One or more location IDs by which to limit results
+          required: false
+          schema:
+            type: string
+            format: csv
+        - name: shift_sort
+          in: query
+          description: True to sort results by user_id, false to sort by shift time. Missing for default sort
+          required: false
+          schema:
+            type: boolean
+        - name: include_repeating_shifts_to
+          in: query
+          description: End date to include repeating shifts in series, if applicable
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: trim_openshifts
+          in: query
+          description: |
+            Setting to true will work w/ the Allow Partial Openshifts feature to display trimmed start/end times for
+            users that can take a conflicting openshift based on the account settings.
+          required: false
+          schema:
+            type: boolean
+        - name: limit_by_rules
+          in: query
+          description: |
+            Setting to true will work w/ the Scheduling Rules feature to only return OpenShifts that the requester is eligible for
+            according to the scheduling rules settings for the account.
+          required: false
+          schema:
+            type: boolean
+
+      responses:
+        '200':
+          description: A list of shifts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shifts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+                  repeating_shifts:
+                    description: |
+                      This field will be present if the `include_repeating_shifts_to` parameter is provided. For each
+                      fetched shift, if it is on a shift chain, we will insert all the shifts on that chain from the
+                      first up to the date specified in the parameter.
+
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+                  shiftchains:
+                    description: Any shift chains that the fetched shifts are a part of
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShiftChain'
+
+components:
+  securitySchemes:
+    W-Token:
+      type: http
+      scheme: bearer
+      bearerFormat: JSON Web Token
+      description: |
+        Authentication with When I Work is based on a token model using [JSON Web Tokens](https://jwt.io/). First, you
+        authenticate using a private developer key and the username and password of a When I Work user. Your developer key
+        can be used like the following in the headers.
+
+        ```
+        curl -X POST \\
+          https://api.login.wheniwork.com/login \\
+          -H 'W-Key: <INSERT_DEVELOPER_KEY_HERE>' \\
+          -H 'content-type: application/json' \\
+          -d '{\"email\":\"<INSERT_USERNAME_HERE>\",\"password\":\"<INSERT_PASSWORD_HERE>\"}'
+        ```
+
+        Authenticating returns back a person object containing a token that is used to authenticate all future requests. You can now use this token to fetch all the users tied to your person. The token may be included in the headers, as a cookie, or in the query string using the key ‘W-Token’ or ‘Authorization’. If the authenticated user belongs to more than one Workplace you will need to get the User listing to obtain the user-id value
+        ```
+        curl -X GET \\
+          'https://api.wheniwork.com/2/login?show_pending=true' \\
+          -H 'Host: api.wheniwork.com' \\
+          -H 'Authorization: Bearer <INSERT_TOKEN_HERE>'
+        ```
+
+        The response will also include a listing of the user objects related to the person for each associated When I Work account. You can use the user ID to set the context for which account you will be acting upon by providing a When I Work user ID through the ‘W-UserID’ header.
+        ```
+        curl -X GET \\
+          https://api.wheniwork.com/2/users \\
+          -H 'Authorization: Bearer <INSERT TOKEN HERE>' \\
+          -H 'W-UserId: <INSERT_USER_ID_HERE>'
+        ```
+        When I Work protects our application and API with rate limiting thresholds. Rate limiting utilizes thresholds based on rolling windows of time. Typical responses will be 403 level client side errors when encountering these limits. If you suspect you are encountering one of our thresholds please connect with our Customer Care team at support@wheniwork.com.
+
+        You can find additional authentication related API documentation in our [Login Service API docs](https://apidocs.wheniwork.com/external/index.html?repo=login).
+  schemas:
+    BaseScheduledBreak:
+      type: object
+      required:
+        - length
+        - paid
+      properties:
+        id:
+          type: integer
+          description: ID of the break. Provide in the request when updating an existing break.
+          example: 1234
+        account_id:
+          type: integer
+          readOnly: true
+          example: 1234
+        length:
+          type: integer
+          description: The length of the break (seconds).
+          example: 1800
+        paid:
+          type: boolean
+          description: Whether the break is a paid rest break (true) or unpaid meal break (false)
+        sort:
+          type: integer
+          description: |
+            Breaks are sorted by start time if it is available. If no start time is provided, breaks are sorted by their position in the request. In a mixed list, breaks without a start time keep their original position, while breaks with a start time are sorted amongst themselves.
+          readOnly: true
+        created_at:
+          type: string
+          description: Date and time the break was created at.
+          readOnly: true
+        created_by:
+          type: integer
+          description: The id of the user who created the break.
+          readOnly: true
+        updated_at:
+          type: string
+          description: Date and time the break was last updated.
+          readOnly: true
+        updated_by:
+          type: integer
+          description: The id of the user who last edited the break.
+          readOnly: true
+
+    ShiftScheduledBreak:
+      allOf:
+        - $ref: '#/components/schemas/BaseScheduledBreak'
+        - type: object
+          properties:
+            shift_id:
+              type: integer
+              description: The ID of the shift that the break applies to.
+              example: 1234
+              readOnly: true
+            start_time:
+              type: string
+              description: The start time of the break. Null if the break does not have a start time.
+              example: Mon, 08 May 2023 9:30:00 -0600
+            end_time:
+              type: string
+              description: The end time of the break. Null if the break does not have an end time. Calculated from the start time of the break and the length.
+              example: Mon, 08 May 2023 10:00:00 -0600
+              readOnly: true
+    Shift:
+      type: object
+      required:
+        - start_time
+        - end_time
+        - location_id
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 10000
+        account_id:
+          type: integer
+          example: 10000
+        user_id:
+          type: integer
+          example: 101
+          description: The user assigned to the shift. Set to `0` for an Open Shift.
+        location_id:
+          type: integer
+          example: 1045
+          description: Location the shift belongs to
+        position_id:
+          type: integer
+          example: 19483
+        site_id:
+          type: integer
+          example: 4351
+        start_time:
+          type: string
+          format: date-time
+          example: Mon, 08 May 2023 08:30:00 -0600
+        end_time:
+          type: string
+          format: date-time
+          example: Mon, 08 May 2023 14:30:00 -0600
+        break_time:
+          type: number
+          example: 0.5
+          description: Length of the unpaid breaks for the shift in hours.
+        breaks:
+          description: >
+            An array of breaks for the shift. When updating a shift, any existing breaks for the shift that are not included in the request will be deleted.
+          type: array
+          items:
+            $ref: '#/components/schemas/ShiftScheduledBreak'
+        color:
+          type: string
+          example: cc000
+          description: Assign color to shift
+        notes:
+          type: string
+          example: Shift test
+          description: Text notation for a Shift
+        alerted:
+          type: boolean
+          example: false
+          description: Is the shift Alert sent
+        linked_users:
+          type: array
+          items:
+            type: integer
+          default: null
+          description: Array of user IDs that can take this openshift. Null means all users are eligible.
+        shiftchain_key:
+          type: string
+          example: 1eizfwp
+          description: The ID to associate shifts in a repeating pattern
+        published:
+          type: boolean
+          example: false
+          description: Is the shift published
+        published_date:
+          type: string
+          format: date-time
+          example: Mon, 01 May 2023 08:30:00 -0600
+        notified_at:
+          type: string
+          format: date-time
+          example: Mon, 01 May 2023 08:32:00 -0600
+        instances:
+          type: integer
+          example: 3
+          default: null
+        created_at:
+          type: string
+          format: date-time
+          example: Mon, 24 Apr 2023 07:30:00 -0600
+        updated_at:
+          type: string
+          format: date-time
+          example: Wed, 26 Apr 2023 11:30:00 -0600
+        acknowledged:
+          type: boolean
+          example: 0
+          description: If enabled; When the user confirmed the shift
+        acknowledged_at:
+          type: string
+          format: date-time
+          example: Fri, 21 Apr 2023 13:30:00 -0600
+          description: If enabled; When the user confirmed the shift
+        creator_id:
+          type: integer
+          example: 101
+          description: The user that created the shift
+        is_open:
+          type: boolean
+          example: false
+        requires_openshift_approval:
+          type: boolean
+          example: true
+          description: Does this shift require OpenShift Approval
+        openshift_approval_request_id:
+          type: integer
+          example: 5232
+          readOnly: true
+          description: ID of the associated OpenShift Approval request
+        is_approved_without_time:
+          type: boolean
+          example: false
+          readOnly: true
+          description: Used to indicate that a manager or supervisor has approved a missing time entry for this shift
+        is_shared:
+          type: boolean
+          example: false
+          description: Is the shift a shared OpenShift
+        is_trimmed:
+          type: boolean
+          example: false
+          description: Is rounding active for shift
+
+    ShiftChain:
+      type: object
+      properties:
+        key:
+          type: string
+        rrule:
+          description: The RFC5545-compliant RRule representing the shift chain.
+          type: string
+          format: RFC5545
+          example: |-
+            DTSTART;TZID=America/Chicago:20240603T090000
+            RRULE:FREQ=WEEKLY;UNTIL=20240629T045959Z;WKST=SU;BYDAY=MO,TU,WE,TH,FR
+        until:
+          description: The date when the shift chain ends.
+          type: string
+          format: date
+        week:
+          description: >
+            Represents the week frequency interval. `1` means weekly, `2` means every two weeks, etc.
+          type: integer
+          example: 1
+        weekdays:
+          description: |
+            A bitmask of the weekdays which shifts in this chain occur on. In a seven-bit binary number, the most
+            significant bit represents Sunday and the least significant bit represents Monday (0b1000001).
+
+            Examples:
+            | Days                      | Binary      | Decimal |
+            |---------------------------|-------------|---------|
+            | Monday through Friday     | `0b0011111` | 31      |
+            | Monday, Wednesday, Friday | `0b0010101` | 21      |
+            | Saturday and Sunday       | `0b1100000` | 96      |
+          type: integer
+          example: 31
+        timezone_id:
+          description: The timezone this chain is built in
+          type: string
+          example: America/Chicago
+        count:
+          deprecated: true
+          description: The number of shifts created by this chain.
+          type: integer
+          example: 30
