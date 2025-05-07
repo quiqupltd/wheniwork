@@ -34,7 +34,6 @@ paths:
           schema:
             type: string
             format: date-time
-            default: now
         - name: end
           in: query
           description: The end of the filter range.
@@ -152,6 +151,12 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ShiftChain'
+        default:
+          description: A default response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   securitySchemes:
@@ -191,6 +196,18 @@ components:
 
         You can find additional authentication related API documentation in our [Login Service API docs](https://apidocs.wheniwork.com/external/index.html?repo=login).
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
     BaseScheduledBreak:
       type: object
       required:
@@ -315,7 +332,6 @@ components:
           type: array
           items:
             type: integer
-          default: null
           description: Array of user IDs that can take this openshift. Null means all users are eligible.
         shiftchain_key:
           type: string
@@ -336,7 +352,6 @@ components:
         instances:
           type: integer
           example: 3
-          default: null
         created_at:
           type: string
           format: date-time
