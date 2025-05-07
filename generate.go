@@ -1,3 +1,3 @@
 package main
 
-//go:generate go tool ogen  --target api --package api --clean ./spec/apispec.yml
+//go:generate go tool oapi-codegen -config .oapi-codegen.yml ./spec/apispec.yml

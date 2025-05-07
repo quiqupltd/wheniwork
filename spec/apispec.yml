@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
   version: 1.0.0
   title: When I Work API Documentation
@@ -11,16 +11,84 @@ servers:
 security:
   - W-Token: []
 
-tags: []
+tags:
+  - name: Login
+    description: Login to When I Work
+  - name: Shifts
+    description: List Shifts
+
+.default_response: &default_response
+  description: A default response
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+
+.not_found_response: &not_found_response
+  description: A not found response
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
 
 paths:
+  /login:
+    post:
+      summary: Login
+      operationId: Login
+      description: Login to When I Work
+      tags:
+        - Login
+      parameters:
+        - name: W-Key
+          in: header
+          description: The developer key
+          required: true
+          schema:
+            type: string
+        - name: W-UserID
+          in: header
+          description: The user id
+          required: false
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+
+      responses:
+        '200':
+          description: A login response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '404': *not_found_response
+        default: *default_response
+
   /2/shifts:
     get:
       summary: List Shifts
+      operationId: GetShifts
       description: Fetch a list of shifts based on a set of filters
       tags:
         - Shifts
       parameters:
+        - name: W-UserID
+          in: header
+          description: The user to select account context for
+          required: false
+          schema:
+            type: string
         - name: user_id
           in: query
           description: The user id to filter by
@@ -151,12 +219,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ShiftChain'
-        default:
-          description: A default response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '404': *not_found_response
+        default: *default_response
 
 components:
   securitySchemes:
@@ -164,37 +228,8 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JSON Web Token
-      description: |
-        Authentication with When I Work is based on a token model using [JSON Web Tokens](https://jwt.io/). First, you
-        authenticate using a private developer key and the username and password of a When I Work user. Your developer key
-        can be used like the following in the headers.
+      description: JWT Login token
 
-        ```
-        curl -X POST \\
-          https://api.login.wheniwork.com/login \\
-          -H 'W-Key: <INSERT_DEVELOPER_KEY_HERE>' \\
-          -H 'content-type: application/json' \\
-          -d '{\"email\":\"<INSERT_USERNAME_HERE>\",\"password\":\"<INSERT_PASSWORD_HERE>\"}'
-        ```
-
-        Authenticating returns back a person object containing a token that is used to authenticate all future requests. You can now use this token to fetch all the users tied to your person. The token may be included in the headers, as a cookie, or in the query string using the key ‘W-Token’ or ‘Authorization’. If the authenticated user belongs to more than one Workplace you will need to get the User listing to obtain the user-id value
-        ```
-        curl -X GET \\
-          'https://api.wheniwork.com/2/login?show_pending=true' \\
-          -H 'Host: api.wheniwork.com' \\
-          -H 'Authorization: Bearer <INSERT_TOKEN_HERE>'
-        ```
-
-        The response will also include a listing of the user objects related to the person for each associated When I Work account. You can use the user ID to set the context for which account you will be acting upon by providing a When I Work user ID through the ‘W-UserID’ header.
-        ```
-        curl -X GET \\
-          https://api.wheniwork.com/2/users \\
-          -H 'Authorization: Bearer <INSERT TOKEN HERE>' \\
-          -H 'W-UserId: <INSERT_USER_ID_HERE>'
-        ```
-        When I Work protects our application and API with rate limiting thresholds. Rate limiting utilizes thresholds based on rolling windows of time. Typical responses will be 403 level client side errors when encountering these limits. If you suspect you are encountering one of our thresholds please connect with our Customer Care team at support@wheniwork.com.
-
-        You can find additional authentication related API documentation in our [Login Service API docs](https://apidocs.wheniwork.com/external/index.html?repo=login).
   schemas:
     Error:
       type: object
@@ -270,6 +305,7 @@ components:
               description: The end time of the break. Null if the break does not have an end time. Calculated from the start time of the break and the length.
               example: Mon, 08 May 2023 10:00:00 -0600
               readOnly: true
+
     Shift:
       type: object
       required:
@@ -442,3 +478,162 @@ components:
           description: The number of shifts created by this chain.
           type: integer
           example: 30
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        company:
+          type: string
+        timezone:
+          $ref: '#/components/schemas/Timezone'
+
+    Timezone:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Asia/Dubai
+
+    User:
+      type: object
+      properties:
+        account_id:
+          type: integer
+          description: ID of the primary account for this user.
+        activated:
+          type: boolean
+          description: Whether the manager has activated this user.
+        email:
+          description: The email address of this user.
+          format: email
+          type: string
+        employee_code:
+          description: The user's employee code. This code can be used to clock in instead of the user's email address, or it can be used to help map users in When I Work to other services.
+          type: string
+        first_name:
+          description: The first name of this user.
+          type: string
+        hourly_rate:
+          description: The base hourly rate for this user. The user can have additional wages based on the position they are working at the time. There is no currency attached, so customers are expected to input correct values for their currency or do their own conversion from USD.
+          format: float
+          type: number
+        hours_max:
+          description: The max hours that this user prefers to work. A manager may still schedule the user beyond this value.
+          format: float
+          type: number
+        hours_preferred:
+          description: The preferred number of hours for this user to work.
+          format: float
+          type: number
+        id:
+          description: Unique identifier for the user.
+          type: integer
+        is_deleted:
+          description: Whether the user has been deleted.
+          type: boolean
+        is_hidden:
+          description: Whether the user has been hidden from the scheduler.
+          type: boolean
+        is_payroll:
+          description: Whether the user has access to payroll. (Only available for managers and supervisors.)
+          type: boolean
+        is_private:
+          description: Whether the user has privacy enabled, which will hide their contact details from other employees. Supervisors+ can not hide their email/phone from other employees.
+          type: boolean
+        is_trusted:
+          description: Whether the user can edit their own timesheet.
+          type: boolean
+        last_login:
+          description: The date and time when this user last logged in.
+          format: date-time
+          type: string
+        last_name:
+          description: The last name of this user.
+          type: string
+        locations:
+          description: An array of location IDs to be applied to this user.
+          type: array
+          items:
+            type: integer
+        login_id:
+          description: Unique identifier for the login belonging to the user.
+          type: integer
+        notes:
+          description: Notes about this user. Visible only to supervisors+.
+          type: string
+        phone_number:
+          description: The phone number of this user.
+          type: string
+        positions:
+          description: An array of position IDs to be assigned to this user.
+          type: array
+          items:
+            type: integer
+        role:
+          description: The user's role.
+          type: string
+          enum:
+            - '1 = Admin'
+            - '2 = Manager'
+            - '3 = Employee (Default)'
+            - '4 = Lead (Unused)'
+            - '5 = Supervisor'
+        type:
+          description: A bitwise flag representing additional wage options.
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+
+    Login:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        avatar:
+          type: object
+          properties:
+            url:
+              type: string
+            size:
+              type: integer
+        token:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        login:
+          $ref: '#/components/schemas/Login'
+        token:
+          type: string
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
