@@ -803,6 +803,47 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/shifts/notify:
+    post:
+      summary: Notify shifts
+      operationId: NotifyShifts
+      description: |
+        Send Notifications for a published schedule.
+        Multi-line YAML is used for this description as per guidelines.
+      tags:
+        - Shifts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftNotifyRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  email:
+                    type: integer
+                    example: 5
+                    description: A count of the emails sent.
+                  sms:
+                    type: integer
+                    example: 10
+                    description: A count of the SMS and/or push notifications (depending on user preferences) sent.
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     W-Token:
@@ -1605,3 +1646,49 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/ShiftBulk'
+
+    ShiftNotifyRequest:
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        all:
+          type: boolean
+          description: Should notifications be sent for all matching shifts, or only new and/or changed shifts since last notification.
+        start:
+          type: string
+          format: date-time
+          example: '2020-10-03T22:00:00.000Z'
+          description: The start of the date range of shifts for which to send notifications
+        end:
+          type: string
+          format: date-time
+          example: '2020-10-10T21:59:56.999Z'
+          description: The end of the date range of shifts for which to send notifications
+        location_id:
+          type: integer
+          example: 9
+          description: The location (schedule) with shifts to send notifications. If not set, all locations will be included.
+        message:
+          type: string
+          example: hello world
+          description: A custom message to send with the shift notifications
+        position_ids:
+          type: array
+          items:
+            type: integer
+            example: 12342
+          description: Limit schedule notifications to only shifts tagged to the given position IDs. Defaults to all positions.
+        site_ids:
+          type: array
+          items:
+            type: integer
+            example: 512352
+          description: Limit schedule notifications to only shifts tagged to the given site IDs. Defaults to all sites.
+        user_ids:
+          type: array
+          items:
+            type: integer
+            example: 231523
+          description: Limit schedule notifications to only shifts tagged to the given user IDs. Defaults to all users.
