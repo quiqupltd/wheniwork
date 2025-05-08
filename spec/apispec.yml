@@ -438,6 +438,90 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/sites/{id}:
+    get:
+      summary: Get Site
+      operationId: GetSite
+      description: Get a single site by ID
+      tags:
+        - Sites
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the site
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  site:
+                    $ref: '#/components/schemas/Site'
+        '404': *not_found_response
+        default: *default_response
+    put:
+      summary: Update Site
+      operationId: UpdateSite
+      description: Update an existing site
+      tags:
+        - Sites
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the site
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  site:
+                    $ref: '#/components/schemas/Site'
+        '404': *not_found_response
+        default: *default_response
+    delete:
+      summary: Delete Site
+      operationId: DeleteSite
+      description: Delete an existing site. This operation cannot be undone.
+      tags:
+        - Sites
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the site
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether deletion was successful.
+        '404': *not_found_response
+        default: *default_response
+
   /2/times:
     get:
       summary: List Times
