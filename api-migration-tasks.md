@@ -4,7 +4,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 
 **Instructions:**
 
-- Each API route is listed below. For each route:
+- Each API route is listed below. For each route follow these steps DO NO SKIP ANY STEPS:
 
   1. Create a new branch using feat/<apislug>
   2. Migrate the route to `apispec.yml` (ensure OpenAPI 3.0.0 compliance).
@@ -14,7 +14,8 @@ This document tracks the migration of all API routes from `spec/original-spec.js
   6. Run `task generate` to verify the code generator works (no errors).
   7. Mark the task as complete in this table.
   8. Update the main [readme](README.md) for supported APIs
-  9. Commit all filse using -am, Use github MCP tool to open a new pull request
+  9. Commit all filse using -am to make sure to add all changes
+  10. Use github MCP tool to open a new pull request
 
 - Add notes or issues as needed in the Notes column.
 
