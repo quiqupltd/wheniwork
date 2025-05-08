@@ -696,6 +696,18 @@ type UpdateShiftParams struct {
 // UpdateShiftJSONBody1 defines parameters for UpdateShift.
 type UpdateShiftJSONBody1 = []Shift
 
+// GetSwapUsersParams defines parameters for GetSwapUsers.
+type GetSwapUsersParams struct {
+	// Id The ID of the shift being dropped
+	Id *int `form:"id,omitempty" json:"id,omitempty"`
+
+	// Count Flag to indicate if only a count of eligible takers should be returned
+	Count *int `form:"count,omitempty" json:"count,omitempty"`
+
+	// IdsOnly Flag to indicate if only the IDs of the eligible takers should be returned
+	IdsOnly *int `form:"ids_only,omitempty" json:"ids_only,omitempty"`
+}
+
 // GetSitesParams defines parameters for GetSites.
 type GetSitesParams struct {
 	// IncludeDeleted Include deleted sites
@@ -886,6 +898,9 @@ type ClientInterface interface {
 	UpdateShiftWithBody(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSwapUsers request
+	GetSwapUsers(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSites request
 	GetSites(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1156,6 +1171,18 @@ func (c *Client) UpdateShiftWithBody(ctx context.Context, id int, params *Update
 
 func (c *Client) UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateShiftRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSwapUsers(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSwapUsersRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2297,6 +2324,94 @@ func NewUpdateShiftRequestWithBody(server string, id int, params *UpdateShiftPar
 	return req, nil
 }
 
+// NewGetSwapUsersRequest generates requests for GetSwapUsers
+func NewGetSwapUsersRequest(server string, id int, params *GetSwapUsersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/%s/swapusers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Count != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "count", runtime.ParamLocationQuery, *params.Count); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IdsOnly != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ids_only", runtime.ParamLocationQuery, *params.IdsOnly); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetSitesRequest generates requests for GetSites
 func NewGetSitesRequest(server string, params *GetSitesParams) (*http.Request, error) {
 	var err error
@@ -2896,6 +3011,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateShiftWithResponse(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
 
+	// GetSwapUsersWithResponse request
+	GetSwapUsersWithResponse(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*GetSwapUsersResponse, error)
+
 	// GetSitesWithResponse request
 	GetSitesWithResponse(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*GetSitesResponse, error)
 
@@ -3274,6 +3392,42 @@ func (r UpdateShiftResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateShiftResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSwapUsersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// CanRelease Indicates if this shift can be released
+		CanRelease *bool `json:"can_release,omitempty"`
+
+		// Count A count of all the eligible takers
+		Count *int                    `json:"count,omitempty"`
+		Users *GetSwapUsers_200_Users `json:"users,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+type GetSwapUsers200Users0 = []User
+type GetSwapUsers200Users1 = []string
+type GetSwapUsers_200_Users struct {
+	union json.RawMessage
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSwapUsersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSwapUsersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3712,6 +3866,15 @@ func (c *ClientWithResponses) UpdateShiftWithResponse(ctx context.Context, id in
 		return nil, err
 	}
 	return ParseUpdateShiftResponse(rsp)
+}
+
+// GetSwapUsersWithResponse request returning *GetSwapUsersResponse
+func (c *ClientWithResponses) GetSwapUsersWithResponse(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*GetSwapUsersResponse, error) {
+	rsp, err := c.GetSwapUsers(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSwapUsersResponse(rsp)
 }
 
 // GetSitesWithResponse request returning *GetSitesResponse
@@ -4318,6 +4481,53 @@ func ParseUpdateShiftResponse(rsp *http.Response) (*UpdateShiftResponse, error) 
 
 			// Shiftchains Any shift chain this shift is a part of
 			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSwapUsersResponse parses an HTTP response from a GetSwapUsersWithResponse call
+func ParseGetSwapUsersResponse(rsp *http.Response) (*GetSwapUsersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSwapUsersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// CanRelease Indicates if this shift can be released
+			CanRelease *bool `json:"can_release,omitempty"`
+
+			// Count A count of all the eligible takers
+			Count *int                    `json:"count,omitempty"`
+			Users *GetSwapUsers_200_Users `json:"users,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
