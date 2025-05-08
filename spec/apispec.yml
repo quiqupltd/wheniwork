@@ -957,6 +957,35 @@ paths:
                       $ref: '#/components/schemas/Shift'
         default: *default_response
 
+  /2/shifts/unpublish:
+    post:
+      summary: Unpublish Shifts
+      operationId: UnpublishShifts
+      description: |
+        These methods allow you to unpublish a group of shifts.
+        (Note: multi-threading is supported for large lists of shifts)
+      tags:
+        - Shifts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftPublish'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shifts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
