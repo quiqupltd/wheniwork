@@ -21,7 +21,7 @@ Package is in active development
 | /2/shifts/notify                      | Notify shifts                               |    [x]    |
 | /2/shifts/notify/{id}                 | Notify single shift                         |    [x]    |
 | /2/shifts/publish                     | Publish Shifts                              |    [x]    |
-| /2/shifts/unassign                    | Unassign/Release Shifts                     |    [ ]    |
+| /2/shifts/unassign                    | Unassign/Release Shifts                     |    [x]    |
 | /2/shifts/unpublish                   | Unpublish Shifts                            |    [ ]    |
 | /2/shifts/{id}/assign                 | Assign multiple users to an OpenShift       |    [ ]    |
 | /2/shifts/{id}/history                | Fetch shift history                         |    [ ]    |

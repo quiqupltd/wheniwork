@@ -927,6 +927,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /2/shifts/unassign:
+    post:
+      summary: Unassign/Release Shifts
+      operationId: UnassignShifts
+      description: |
+        Move a set of shifts from users to an OpenShift.
+
+        This can also be used by employees when the Shift Release setting is enabled.
+      tags:
+        - Shifts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftUnassignRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shifts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -1793,3 +1823,13 @@ components:
             type: integer
           example: [878787, 656565]
           description: List of shift IDs
+
+    ShiftUnassignRequest:
+      type: object
+      properties:
+        shift_ids:
+          description: Array of shift IDs
+          type: array
+          items:
+            type: string
+            example: '555555'

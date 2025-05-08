@@ -318,6 +318,12 @@ type ShiftScheduledBreak struct {
 	UpdatedBy *int `json:"updated_by,omitempty"`
 }
 
+// ShiftUnassignRequest defines model for ShiftUnassignRequest.
+type ShiftUnassignRequest struct {
+	// ShiftIds Array of shift IDs
+	ShiftIds *[]string `json:"shift_ids,omitempty"`
+}
+
 // SingleShiftNotifyRequest defines model for SingleShiftNotifyRequest.
 type SingleShiftNotifyRequest struct {
 	// Message A custom message to send with the shift notifications.
@@ -735,6 +741,9 @@ type NotifySingleShiftJSONRequestBody = SingleShiftNotifyRequest
 // PublishShiftsJSONRequestBody defines body for PublishShifts for application/json ContentType.
 type PublishShiftsJSONRequestBody = ShiftPublish
 
+// UnassignShiftsJSONRequestBody defines body for UnassignShifts for application/json ContentType.
+type UnassignShiftsJSONRequestBody = ShiftUnassignRequest
+
 // UpdateShiftJSONRequestBody defines body for UpdateShift for application/json ContentType.
 type UpdateShiftJSONRequestBody UpdateShiftJSONBody
 
@@ -853,6 +862,11 @@ type ClientInterface interface {
 	PublishShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PublishShifts(ctx context.Context, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UnassignShiftsWithBody request with any body
+	UnassignShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UnassignShifts(ctx context.Context, body UnassignShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteShift request
 	DeleteShift(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1038,6 +1052,30 @@ func (c *Client) PublishShiftsWithBody(ctx context.Context, contentType string, 
 
 func (c *Client) PublishShifts(ctx context.Context, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPublishShiftsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UnassignShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUnassignShiftsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UnassignShifts(ctx context.Context, body UnassignShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUnassignShiftsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1950,6 +1988,46 @@ func NewPublishShiftsRequestWithBody(server string, contentType string, body io.
 	return req, nil
 }
 
+// NewUnassignShiftsRequest calls the generic UnassignShifts builder with application/json body
+func NewUnassignShiftsRequest(server string, body UnassignShiftsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUnassignShiftsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUnassignShiftsRequestWithBody generates requests for UnassignShifts with any type of body
+func NewUnassignShiftsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/unassign")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteShiftRequest generates requests for DeleteShift
 func NewDeleteShiftRequest(server string, id int, params *DeleteShiftParams) (*http.Request, error) {
 	var err error
@@ -2725,6 +2803,11 @@ type ClientWithResponsesInterface interface {
 
 	PublishShiftsWithResponse(ctx context.Context, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error)
 
+	// UnassignShiftsWithBodyWithResponse request with any body
+	UnassignShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UnassignShiftsResponse, error)
+
+	UnassignShiftsWithResponse(ctx context.Context, body UnassignShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*UnassignShiftsResponse, error)
+
 	// DeleteShiftWithResponse request
 	DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error)
 
@@ -2969,6 +3052,31 @@ func (r PublishShiftsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PublishShiftsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UnassignShiftsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Shifts *[]Shift `json:"shifts,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UnassignShiftsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UnassignShiftsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3435,6 +3543,23 @@ func (c *ClientWithResponses) PublishShiftsWithResponse(ctx context.Context, bod
 	return ParsePublishShiftsResponse(rsp)
 }
 
+// UnassignShiftsWithBodyWithResponse request with arbitrary body returning *UnassignShiftsResponse
+func (c *ClientWithResponses) UnassignShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UnassignShiftsResponse, error) {
+	rsp, err := c.UnassignShiftsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUnassignShiftsResponse(rsp)
+}
+
+func (c *ClientWithResponses) UnassignShiftsWithResponse(ctx context.Context, body UnassignShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*UnassignShiftsResponse, error) {
+	rsp, err := c.UnassignShifts(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUnassignShiftsResponse(rsp)
+}
+
 // DeleteShiftWithResponse request returning *DeleteShiftResponse
 func (c *ClientWithResponses) DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error) {
 	rsp, err := c.DeleteShift(ctx, id, params, reqEditors...)
@@ -3860,6 +3985,41 @@ func ParsePublishShiftsResponse(rsp *http.Response) (*PublishShiftsResponse, err
 	}
 
 	response := &PublishShiftsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Shifts *[]Shift `json:"shifts,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUnassignShiftsResponse parses an HTTP response from a UnassignShiftsWithResponse call
+func ParseUnassignShiftsResponse(rsp *http.Response) (*UnassignShiftsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UnassignShiftsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
