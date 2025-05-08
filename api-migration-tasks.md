@@ -8,9 +8,14 @@ need to look at any other files in the codebase just [original spec](./spec/orig
 - Each route to be migrated is listed as a task.
 - Check off each task after:
   1. Migrating the route to `apispec.yml`. (ensure it is openapi 3.0.0 compliant)
-  2. Make sure the new route has a default response
-  3. Ensuring the project compiles and tests pass.
-  4. Verifying the route works as expected.
+  2. Migrating all referenced schemas (e.g., request/response bodies) to `apispec.yml`.
+  3. Make sure the new route has a default response
+  4. Any text fields using the format "blah blah\nyadda yadda\ should instead use multi line yaml like:
+     ```
+         description: |
+           blah blah
+           yadda yadda
+     ```
 - Add notes or issues as needed.
 
 ---
@@ -19,7 +24,7 @@ need to look at any other files in the codebase just [original spec](./spec/orig
 
 - [x] **/2/shifts**: List Shifts (already migrated)
 - [x] **/2/shifts/{id}**: Get, Update, or Delete a single shift by ID
-- [ ] **/2/times**: List or Create Times
+- [x] **/2/times**: List or Create Times
 - [ ] **/2/times/{id}**: Get, Update, or Delete a single time by ID
 - [ ] **/2/times/clockin**: Clock In
 - [ ] **/2/times/clockout**: Clock Out

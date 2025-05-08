@@ -237,6 +237,127 @@ type ShiftScheduledBreak struct {
 	UpdatedBy *int `json:"updated_by,omitempty"`
 }
 
+// Time defines model for Time.
+type Time struct {
+	// AccountId The account id
+	AccountId *int `json:"account_id,omitempty"`
+
+	// AlertType The type of alert for this time
+	AlertType *int `json:"alert_type,omitempty"`
+
+	// CashTips Any cash tips reported for the shift.
+	// Note: the tips feature is required to see and use this field.
+	CashTips *string `json:"cash_tips"`
+
+	// CreatedAt When the time was created
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// CreatorId The user that created the time.
+	CreatorId *int `json:"creator_id,omitempty"`
+
+	// EndTime The end time
+	EndTime *time.Time `json:"end_time,omitempty"`
+
+	// HourlyRate The base hourly rate for this time.
+	HourlyRate *float32 `json:"hourly_rate,omitempty"`
+
+	// Id The time id
+	Id *int `json:"id,omitempty"`
+
+	// IsAlerted If alert_type > 0
+	IsAlerted *bool `json:"is_alerted,omitempty"`
+
+	// IsApproved If the time is approved
+	IsApproved *bool `json:"is_approved,omitempty"`
+
+	// Length The length of the time in hours.
+	Length *float32 `json:"length,omitempty"`
+
+	// LocationId Location the time belongs to. 0 if unassigned.
+	LocationId *int `json:"location_id,omitempty"`
+
+	// ModifiedBy The user that modified the time
+	ModifiedBy *int `json:"modified_by,omitempty"`
+
+	// Notes Notes for a time
+	Notes *string `json:"notes,omitempty"`
+
+	// PositionId Position the time belongs to. 0 if unassigned.
+	PositionId *int `json:"position_id,omitempty"`
+
+	// RoundedEndTime The rounded end time. If rounding is not enabled this field will not be present.
+	RoundedEndTime *time.Time `json:"rounded_end_time,omitempty"`
+
+	// RoundedLength The rounded length calculated from the rounded_start_time and rounded_end_time. If rounding is not enabled this field will not be present.
+	RoundedLength *float32 `json:"rounded_length,omitempty"`
+
+	// RoundedStartTime The rounded start time. If rounding is not enabled this field will not be present.
+	RoundedStartTime *time.Time `json:"rounded_start_time,omitempty"`
+
+	// ShiftId A shift tied to this time. 0 if unassigned.
+	ShiftId *int `json:"shift_id,omitempty"`
+
+	// SiteId Site the time belongs to. 0 if unassigned.
+	SiteId *int `json:"site_id,omitempty"`
+
+	// SplitTime If the time crosses payroll periods, when to split it
+	SplitTime *time.Time `json:"split_time,omitempty"`
+
+	// StartTime The start time
+	StartTime *time.Time `json:"start_time,omitempty"`
+
+	// SyncHash The quickbooks sync hash
+	SyncHash *string `json:"sync_hash,omitempty"`
+
+	// SyncId The quickbooks sync id
+	SyncId *string `json:"sync_id,omitempty"`
+
+	// UpdatedAt When the time was updated
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+
+	// UserId The user assigned to the time.
+	UserId *int `json:"user_id,omitempty"`
+}
+
+// TimeRequest defines model for TimeRequest.
+type TimeRequest struct {
+	// CashTips The amount of cash tips reported for the time entry.
+	CashTips *string `json:"cash_tips,omitempty"`
+
+	// EndTime The end time
+	EndTime *time.Time `json:"end_time,omitempty"`
+
+	// IsApproved If the time is approved
+	IsApproved *bool `json:"is_approved,omitempty"`
+
+	// LocationId Location the time belongs to. 0 if unassigned.
+	LocationId *int `json:"location_id,omitempty"`
+
+	// Notes Notes for a time
+	Notes *string `json:"notes,omitempty"`
+
+	// PositionId Position the time belongs to. 0 if unassigned.
+	PositionId *int `json:"position_id,omitempty"`
+
+	// RoundedEndTime The rounded end time. If rounding is not enabled this field will not be present.
+	RoundedEndTime *time.Time `json:"rounded_end_time,omitempty"`
+
+	// RoundedStartTime The rounded start time. If rounding is not enabled this field will not be present.
+	RoundedStartTime *time.Time `json:"rounded_start_time,omitempty"`
+
+	// ShiftId A shift tied to this time. 0 if unassigned.
+	ShiftId *int `json:"shift_id,omitempty"`
+
+	// SiteId Site the time belongs to. 0 if unassigned.
+	SiteId *int `json:"site_id,omitempty"`
+
+	// StartTime The start time. For accounts with Check payroll onboarded, time must not be past the end of the current pay period
+	StartTime *time.Time `json:"start_time,omitempty"`
+
+	// UserId The user assigned to the times.
+	UserId *int `json:"user_id,omitempty"`
+}
+
 // Timezone defines model for Timezone.
 type Timezone struct {
 	Name string `json:"name"`
@@ -420,11 +541,38 @@ type UpdateShiftParams struct {
 // UpdateShiftJSONBody1 defines parameters for UpdateShift.
 type UpdateShiftJSONBody1 = []Shift
 
+// GetTimesParams defines parameters for GetTimes.
+type GetTimesParams struct {
+	// Start The start of the filter range.
+	Start *time.Time `form:"start,omitempty" json:"start,omitempty"`
+
+	// End The end of the filter range.
+	End *time.Time `form:"end,omitempty" json:"end,omitempty"`
+
+	// UserId List of user ids to filter on
+	UserId *string `form:"user_id,omitempty" json:"user_id,omitempty"`
+
+	// OnlyOpen Return only times without an end time
+	OnlyOpen *bool `form:"only_open,omitempty" json:"only_open,omitempty"`
+
+	// UpdatedAt Only return times that have been updated since the provided timestamp.
+	UpdatedAt *time.Time `form:"updated_at,omitempty" json:"updated_at,omitempty"`
+
+	// OverwriteWithRounded Flag to overwrite the start/end/length values with their rounded counterparts (if account setting is enabled)
+	OverwriteWithRounded *int `form:"overwrite_with_rounded,omitempty" json:"overwrite_with_rounded,omitempty"`
+
+	// IncludePaidBreakNote Returns the note for a Shift Break Paid Record. Deprecated - please refer to the break attestation docs [here](#tag/Break-Attestation)
+	IncludePaidBreakNote *bool `form:"include_paid_break_note,omitempty" json:"include_paid_break_note,omitempty"`
+}
+
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody LoginJSONBody
 
 // UpdateShiftJSONRequestBody defines body for UpdateShift for application/json ContentType.
 type UpdateShiftJSONRequestBody UpdateShiftJSONBody
+
+// CreateTimeJSONRequestBody defines body for CreateTime for application/json ContentType.
+type CreateTimeJSONRequestBody = TimeRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -517,6 +665,14 @@ type ClientInterface interface {
 	UpdateShiftWithBody(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTimes request
+	GetTimes(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateTimeWithBody request with any body
+	CreateTimeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateTime(ctx context.Context, body CreateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) LoginWithBody(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -593,6 +749,42 @@ func (c *Client) UpdateShiftWithBody(ctx context.Context, id int, params *Update
 
 func (c *Client) UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateShiftRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTimes(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTimesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateTimeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTimeRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateTime(ctx context.Context, body CreateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTimeRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1168,6 +1360,191 @@ func NewUpdateShiftRequestWithBody(server string, id int, params *UpdateShiftPar
 	return req, nil
 }
 
+// NewGetTimesRequest generates requests for GetTimes
+func NewGetTimesRequest(server string, params *GetTimesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/times")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Start != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "start", runtime.ParamLocationQuery, *params.Start); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.End != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "end", runtime.ParamLocationQuery, *params.End); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.UserId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "user_id", runtime.ParamLocationQuery, *params.UserId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.OnlyOpen != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "only_open", runtime.ParamLocationQuery, *params.OnlyOpen); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.UpdatedAt != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "updated_at", runtime.ParamLocationQuery, *params.UpdatedAt); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.OverwriteWithRounded != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "overwrite_with_rounded", runtime.ParamLocationQuery, *params.OverwriteWithRounded); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludePaidBreakNote != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_paid_break_note", runtime.ParamLocationQuery, *params.IncludePaidBreakNote); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateTimeRequest calls the generic CreateTime builder with application/json body
+func NewCreateTimeRequest(server string, body CreateTimeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateTimeRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateTimeRequestWithBody generates requests for CreateTime with any type of body
+func NewCreateTimeRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/times")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -1229,6 +1606,14 @@ type ClientWithResponsesInterface interface {
 	UpdateShiftWithBodyWithResponse(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
 
 	UpdateShiftWithResponse(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
+
+	// GetTimesWithResponse request
+	GetTimesWithResponse(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*GetTimesResponse, error)
+
+	// CreateTimeWithBodyWithResponse request with any body
+	CreateTimeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeResponse, error)
+
+	CreateTimeWithResponse(ctx context.Context, body CreateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTimeResponse, error)
 }
 
 type LoginResponse struct {
@@ -1388,6 +1773,58 @@ func (r UpdateShiftResponse) StatusCode() int {
 	return 0
 }
 
+type GetTimesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Times *[]Time `json:"times,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTimesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTimesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Time *Time `json:"time,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // LoginWithBodyWithResponse request with arbitrary body returning *LoginResponse
 func (c *ClientWithResponses) LoginWithBodyWithResponse(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error) {
 	rsp, err := c.LoginWithBody(ctx, params, contentType, body, reqEditors...)
@@ -1447,6 +1884,32 @@ func (c *ClientWithResponses) UpdateShiftWithResponse(ctx context.Context, id in
 		return nil, err
 	}
 	return ParseUpdateShiftResponse(rsp)
+}
+
+// GetTimesWithResponse request returning *GetTimesResponse
+func (c *ClientWithResponses) GetTimesWithResponse(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*GetTimesResponse, error) {
+	rsp, err := c.GetTimes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTimesResponse(rsp)
+}
+
+// CreateTimeWithBodyWithResponse request with arbitrary body returning *CreateTimeResponse
+func (c *ClientWithResponses) CreateTimeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeResponse, error) {
+	rsp, err := c.CreateTimeWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTimeResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateTimeWithResponse(ctx context.Context, body CreateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTimeResponse, error) {
+	rsp, err := c.CreateTime(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTimeResponse(rsp)
 }
 
 // ParseLoginResponse parses an HTTP response from a LoginWithResponse call
@@ -1661,6 +2124,90 @@ func ParseUpdateShiftResponse(rsp *http.Response) (*UpdateShiftResponse, error) 
 
 			// Shiftchains Any shift chain this shift is a part of
 			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTimesResponse parses an HTTP response from a GetTimesWithResponse call
+func ParseGetTimesResponse(rsp *http.Response) (*GetTimesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTimesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Times *[]Time `json:"times,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateTimeResponse parses an HTTP response from a CreateTimeWithResponse call
+func ParseCreateTimeResponse(rsp *http.Response) (*CreateTimeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Time *Time `json:"time,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

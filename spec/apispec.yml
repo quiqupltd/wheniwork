@@ -16,6 +16,8 @@ tags:
     description: Login to When I Work
   - name: Shifts
     description: List Shifts
+  - name: Times
+    description: List Times
 
 # Ignore this for linting its ok
 .default_response: &default_response
@@ -381,6 +383,100 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/times:
+    get:
+      summary: List Times
+      operationId: GetTimes
+      description: Fetch a list of times based on a set of filters
+      tags:
+        - Times
+      parameters:
+        - name: start
+          in: query
+          description: The start of the filter range.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: The end of the filter range.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: user_id
+          in: query
+          description: List of user ids to filter on
+          required: false
+          schema:
+            type: string
+            format: csv
+        - name: only_open
+          in: query
+          description: Return only times without an end time
+          required: false
+          schema:
+            type: boolean
+        - name: updated_at
+          in: query
+          description: Only return times that have been updated since the provided timestamp.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: overwrite_with_rounded
+          in: query
+          description: Flag to overwrite the start/end/length values with their rounded counterparts (if account setting is enabled)
+          required: false
+          schema:
+            type: integer
+        - name: include_paid_break_note
+          in: query
+          description: Returns the note for a Shift Break Paid Record. Deprecated - please refer to the break attestation docs [here](#tag/Break-Attestation)
+          required: false
+          deprecated: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  times:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Time'
+        '404': *not_found_response
+        default: *default_response
+    post:
+      summary: Create Time
+      operationId: CreateTime
+      description: Create a time. For accounts with Check payroll onboarded, start time must not be past the end of the current pay period
+      tags:
+        - Times
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  time:
+                    $ref: '#/components/schemas/Time'
+        '404': *not_found_response
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -637,6 +733,199 @@ components:
           description: The number of shifts created by this chain.
           type: integer
           example: 30
+
+    Time:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 10000
+          description: The time id
+        account_id:
+          type: integer
+          readOnly: true
+          example: 10000
+          description: The account id
+        user_id:
+          type: integer
+          example: 101
+          description: The user assigned to the time.
+        creator_id:
+          type: integer
+          readOnly: true
+          example: 100
+          description: The user that created the time.
+        position_id:
+          type: integer
+          example: 19483
+          description: Position the time belongs to. 0 if unassigned.
+        location_id:
+          type: integer
+          example: 1045
+          description: Location the time belongs to. 0 if unassigned.
+        site_id:
+          type: integer
+          example: 4351
+          description: Site the time belongs to. 0 if unassigned.
+        shift_id:
+          type: integer
+          example: 5451
+          description: A shift tied to this time. 0 if unassigned.
+        start_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 08:30:00 -0600
+          description: The start time
+        end_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 14:30:00 -0600
+          description: The end time
+        rounded_start_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 08:30:00 -0600
+          description: The rounded start time. If rounding is not enabled this field will not be present.
+        rounded_end_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 14:30:00 -0600
+          description: The rounded end time. If rounding is not enabled this field will not be present.
+        notes:
+          type: string
+          example: A time note
+          description: Notes for a time
+        length:
+          type: number
+          format: float
+          readOnly: true
+          example: 8
+          description: The length of the time in hours.
+        rounded_length:
+          type: number
+          format: float
+          readOnly: true
+          example: 8
+          description: The rounded length calculated from the rounded_start_time and rounded_end_time. If rounding is not enabled this field will not be present.
+        hourly_rate:
+          type: number
+          format: float
+          readOnly: true
+          example: 15
+          description: The base hourly rate for this time.
+        cash_tips:
+          type: string
+          format: decimal
+          nullable: true
+          description: |
+            Any cash tips reported for the shift.
+            Note: the tips feature is required to see and use this field.
+          example: '123.45'
+        alert_type:
+          type: integer
+          readOnly: true
+          example: 16
+          description: The type of alert for this time
+        is_approved:
+          type: boolean
+          example: false
+          description: If the time is approved
+        modified_by:
+          type: integer
+          readOnly: true
+          example: 18438
+          description: The user that modified the time
+        sync_id:
+          type: string
+          readOnly: true
+          example: ''
+          description: The quickbooks sync id
+        sync_hash:
+          type: string
+          readOnly: true
+          example: ''
+          description: The quickbooks sync hash
+        updated_at:
+          type: string
+          readOnly: true
+          format: date-time
+          example: Tue, 17 Mar 2020 14:48:43 -0700
+          description: When the time was updated
+        created_at:
+          type: string
+          readOnly: true
+          format: date-time
+          example: Tue, 17 Mar 2020 14:25:48 -0700
+          description: When the time was created
+        split_time:
+          type: string
+          readOnly: true
+          format: date-time
+          example: Fri, 07 Mar 2016 00:00:00 -0600
+          description: If the time crosses payroll periods, when to split it
+        is_alerted:
+          type: boolean
+          readOnly: true
+          example: false
+          description: If alert_type > 0
+
+    TimeRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 101
+          description: The user assigned to the times.
+        position_id:
+          type: integer
+          example: 19483
+          description: Position the time belongs to. 0 if unassigned.
+        location_id:
+          type: integer
+          example: 1045
+          description: Location the time belongs to. 0 if unassigned.
+        site_id:
+          type: integer
+          example: 4351
+          description: Site the time belongs to. 0 if unassigned.
+        shift_id:
+          type: integer
+          example: 5451
+          description: A shift tied to this time. 0 if unassigned.
+        start_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 08:30:00 -0600
+          description: The start time. For accounts with Check payroll onboarded, time must not be past the end of the current pay period
+        end_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 14:30:00 -0600
+          description: The end time
+        rounded_start_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 08:30:00 -0600
+          description: The rounded start time. If rounding is not enabled this field will not be present.
+        rounded_end_time:
+          type: string
+          format: date-time
+          example: Fri, 07 Mar 2016 14:30:00 -0600
+          description: The rounded end time. If rounding is not enabled this field will not be present.
+        notes:
+          type: string
+          example: A time note
+          description: Notes for a time
+        is_approved:
+          type: boolean
+          example: false
+          description: If the time is approved
+        cash_tips:
+          description: The amount of cash tips reported for the time entry.
+          type: string
+          format: decimal
+          example: '54.32'
 
     Account:
       type: object
