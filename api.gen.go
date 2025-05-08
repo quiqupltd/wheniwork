@@ -66,20 +66,52 @@ const (
 	Unpublished     ShiftHistoryType = "unpublished"
 )
 
+// Defines values for UpdateUserRequestRole.
+const (
+	UpdateUserRequestRoleN1Admin           UpdateUserRequestRole = "1 = Admin"
+	UpdateUserRequestRoleN2Manager         UpdateUserRequestRole = "2 = Manager"
+	UpdateUserRequestRoleN3EmployeeDefault UpdateUserRequestRole = "3 = Employee (Default)"
+	UpdateUserRequestRoleN4LeadUnused      UpdateUserRequestRole = "4 = Lead (Unused)"
+	UpdateUserRequestRoleN5Supervisor      UpdateUserRequestRole = "5 = Supervisor"
+)
+
+// Defines values for UpdateUserRequestType.
+const (
+	UpdateUserRequestTypeN1 UpdateUserRequestType = 1
+	UpdateUserRequestTypeN2 UpdateUserRequestType = 2
+	UpdateUserRequestTypeN3 UpdateUserRequestType = 3
+)
+
 // Defines values for UserRole.
 const (
-	N1Admin           UserRole = "1 = Admin"
-	N2Manager         UserRole = "2 = Manager"
-	N3EmployeeDefault UserRole = "3 = Employee (Default)"
-	N4LeadUnused      UserRole = "4 = Lead (Unused)"
-	N5Supervisor      UserRole = "5 = Supervisor"
+	UserRoleN1Admin           UserRole = "1 = Admin"
+	UserRoleN2Manager         UserRole = "2 = Manager"
+	UserRoleN3EmployeeDefault UserRole = "3 = Employee (Default)"
+	UserRoleN4LeadUnused      UserRole = "4 = Lead (Unused)"
+	UserRoleN5Supervisor      UserRole = "5 = Supervisor"
 )
 
 // Defines values for UserType.
 const (
-	N1 UserType = 1
-	N2 UserType = 2
-	N3 UserType = 3
+	UserTypeN1 UserType = 1
+	UserTypeN2 UserType = 2
+	UserTypeN3 UserType = 3
+)
+
+// Defines values for UserRequestRole.
+const (
+	N1Admin           UserRequestRole = "1 = Admin"
+	N2Manager         UserRequestRole = "2 = Manager"
+	N3EmployeeDefault UserRequestRole = "3 = Employee (Default)"
+	N4LeadUnused      UserRequestRole = "4 = Lead (Unused)"
+	N5Supervisor      UserRequestRole = "5 = Supervisor"
+)
+
+// Defines values for UserRequestType.
+const (
+	N1 UserRequestType = 1
+	N2 UserRequestType = 2
+	N3 UserRequestType = 3
 )
 
 // Account defines model for Account.
@@ -606,6 +638,87 @@ type Timezone struct {
 	Name string `json:"name"`
 }
 
+// UpdateUserRequest defines model for UpdateUserRequest.
+type UpdateUserRequest struct {
+	// AccountId ID of the primary account for this user.
+	AccountId *int `json:"account_id,omitempty"`
+
+	// Activated Whether the manager has activated this user.
+	Activated *bool `json:"activated,omitempty"`
+
+	// Email The email address of this user.
+	Email *openapi_types.Email `json:"email,omitempty"`
+
+	// EmployeeCode The user's employee code. This code can be used to clock in instead of the user's email address, or it can be used to help map users in When I Work to other services.
+	EmployeeCode *string `json:"employee_code,omitempty"`
+
+	// FirstName The first name of this user.
+	FirstName *string `json:"first_name,omitempty"`
+
+	// HourlyRate The base hourly rate for this user. The user can have additional wages based on the position they are working at the time. There is no currency attached, so customers are expected to input correct values for their currency or do their own conversion from USD.
+	HourlyRate *float32 `json:"hourly_rate,omitempty"`
+
+	// HoursMax The max hours that this user prefers to work. A manager may still schedule the user beyond this value.
+	HoursMax *float32 `json:"hours_max,omitempty"`
+
+	// HoursPreferred The preferred number of hours for this user to work.
+	HoursPreferred *float32 `json:"hours_preferred,omitempty"`
+
+	// Id Unique identifier for the user.
+	Id *int `json:"id,omitempty"`
+
+	// IsDeleted Whether the user has been deleted.
+	IsDeleted *bool `json:"is_deleted,omitempty"`
+
+	// IsHidden Whether the user has been hidden from the scheduler.
+	IsHidden *bool `json:"is_hidden,omitempty"`
+
+	// IsPayroll Whether the user has access to payroll. (Only available for managers and supervisors.)
+	IsPayroll *bool `json:"is_payroll,omitempty"`
+
+	// IsPrivate Whether the user has privacy enabled, which will hide their contact details from other employees. Supervisors+ can not hide their email/phone from other employees.
+	IsPrivate *bool `json:"is_private,omitempty"`
+
+	// IsTrusted Whether the user can edit their own timesheet.
+	IsTrusted *bool `json:"is_trusted,omitempty"`
+
+	// LastLogin The date and time when this user last logged in.
+	LastLogin *time.Time `json:"last_login,omitempty"`
+
+	// LastName The last name of this user.
+	LastName *string `json:"last_name,omitempty"`
+
+	// Locations An array of location IDs to be applied to this user.
+	Locations *[]int `json:"locations,omitempty"`
+
+	// LoginId Unique identifier for the login belonging to the user.
+	LoginId *int `json:"login_id,omitempty"`
+
+	// Notes Notes about this user. Visible only to supervisors+.
+	Notes *string `json:"notes,omitempty"`
+
+	// PhoneNumber The phone number of this user.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// Positions An array of position IDs to be assigned to this user.
+	Positions *[]int `json:"positions,omitempty"`
+
+	// Reactivate Whether to reactivate a previously deleted user.
+	Reactivate *bool `json:"reactivate,omitempty"`
+
+	// Role The user's role.
+	Role *UpdateUserRequestRole `json:"role,omitempty"`
+
+	// Type A bitwise flag representing additional wage options.
+	Type *UpdateUserRequestType `json:"type,omitempty"`
+}
+
+// UpdateUserRequestRole The user's role.
+type UpdateUserRequestRole string
+
+// UpdateUserRequestType A bitwise flag representing additional wage options.
+type UpdateUserRequestType int
+
 // User defines model for User.
 type User struct {
 	// AccountId ID of the primary account for this user.
@@ -683,6 +796,87 @@ type UserRole string
 
 // UserType A bitwise flag representing additional wage options.
 type UserType int
+
+// UserRequest defines model for UserRequest.
+type UserRequest struct {
+	// AccountId ID of the primary account for this user.
+	AccountId *int `json:"account_id,omitempty"`
+
+	// Activated Whether the manager has activated this user.
+	Activated *bool `json:"activated,omitempty"`
+
+	// Email The email address of this user.
+	Email *openapi_types.Email `json:"email,omitempty"`
+
+	// EmployeeCode The user's employee code. This code can be used to clock in instead of the user's email address, or it can be used to help map users in When I Work to other services.
+	EmployeeCode *string `json:"employee_code,omitempty"`
+
+	// FirstName The first name of this user.
+	FirstName *string `json:"first_name,omitempty"`
+
+	// HourlyRate The base hourly rate for this user. The user can have additional wages based on the position they are working at the time. There is no currency attached, so customers are expected to input correct values for their currency or do their own conversion from USD.
+	HourlyRate *float32 `json:"hourly_rate,omitempty"`
+
+	// HoursMax The max hours that this user prefers to work. A manager may still schedule the user beyond this value.
+	HoursMax *float32 `json:"hours_max,omitempty"`
+
+	// HoursPreferred The preferred number of hours for this user to work.
+	HoursPreferred *float32 `json:"hours_preferred,omitempty"`
+
+	// Id Unique identifier for the user.
+	Id *int `json:"id,omitempty"`
+
+	// Invite Whether an invite should be sent upon user creation. When missing or not false, an invite is sent by default
+	Invite *bool `json:"invite,omitempty"`
+
+	// IsDeleted Whether the user has been deleted.
+	IsDeleted *bool `json:"is_deleted,omitempty"`
+
+	// IsHidden Whether the user has been hidden from the scheduler.
+	IsHidden *bool `json:"is_hidden,omitempty"`
+
+	// IsPayroll Whether the user has access to payroll. (Only available for managers and supervisors.)
+	IsPayroll *bool `json:"is_payroll,omitempty"`
+
+	// IsPrivate Whether the user has privacy enabled, which will hide their contact details from other employees. Supervisors+ can not hide their email/phone from other employees.
+	IsPrivate *bool `json:"is_private,omitempty"`
+
+	// IsTrusted Whether the user can edit their own timesheet.
+	IsTrusted *bool `json:"is_trusted,omitempty"`
+
+	// LastLogin The date and time when this user last logged in.
+	LastLogin *time.Time `json:"last_login,omitempty"`
+
+	// LastName The last name of this user.
+	LastName *string `json:"last_name,omitempty"`
+
+	// Locations An array of location IDs to be applied to this user.
+	Locations *[]int `json:"locations,omitempty"`
+
+	// LoginId Unique identifier for the login belonging to the user.
+	LoginId *int `json:"login_id,omitempty"`
+
+	// Notes Notes about this user. Visible only to supervisors+.
+	Notes *string `json:"notes,omitempty"`
+
+	// PhoneNumber The phone number of this user.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// Positions An array of position IDs to be assigned to this user.
+	Positions *[]int `json:"positions,omitempty"`
+
+	// Role The user's role.
+	Role *UserRequestRole `json:"role,omitempty"`
+
+	// Type A bitwise flag representing additional wage options.
+	Type *UserRequestType `json:"type,omitempty"`
+}
+
+// UserRequestRole The user's role.
+type UserRequestRole string
+
+// UserRequestType A bitwise flag representing additional wage options.
+type UserRequestType int
 
 // LoginJSONBody defines parameters for Login.
 type LoginJSONBody struct {
@@ -859,6 +1053,33 @@ type GetTimesParams struct {
 	IncludePaidBreakNote *bool `form:"include_paid_break_note,omitempty" json:"include_paid_break_note,omitempty"`
 }
 
+// GetUsersParams defines parameters for GetUsers.
+type GetUsersParams struct {
+	// LocationId One or more location IDs by which to limit results
+	LocationId *[]int `form:"location_id,omitempty" json:"location_id,omitempty"`
+
+	// ShowPending Include pending users in results. Defaults to true.
+	ShowPending *bool `form:"show_pending,omitempty" json:"show_pending,omitempty"`
+
+	// OnlyPending Include ONLY pending users in results. Defaults to false.
+	OnlyPending *bool `form:"only_pending,omitempty" json:"only_pending,omitempty"`
+
+	// ShowDeleted Include deleted users in results. Defaults to false.
+	ShowDeleted *bool `form:"show_deleted,omitempty" json:"show_deleted,omitempty"`
+
+	// OnlyDeleted Only include deleted/archived users in results. Defaults to false.
+	OnlyDeleted *bool `form:"only_deleted,omitempty" json:"only_deleted,omitempty"`
+
+	// Search Optional string to search by in users first name, last name, or email.
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+}
+
+// DeleteUserParams defines parameters for DeleteUser.
+type DeleteUserParams struct {
+	// DeletedShifts Indicates whether or not to delete this user's future shifts. If not deleted, those shifts will be moved to Open Shifts.
+	DeletedShifts *bool `form:"deleted_shifts,omitempty" json:"deleted_shifts,omitempty"`
+}
+
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody LoginJSONBody
 
@@ -897,6 +1118,12 @@ type CreateTimeJSONRequestBody = TimeRequest
 
 // UpdateTimeJSONRequestBody defines body for UpdateTime for application/json ContentType.
 type UpdateTimeJSONRequestBody = TimeRequest
+
+// CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
+type CreateUserJSONRequestBody = UserRequest
+
+// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
+type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -1071,6 +1298,25 @@ type ClientInterface interface {
 	UpdateTimeWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateTime(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUsers request
+	GetUsers(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateUserWithBody request with any body
+	CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateUser(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteUser request
+	DeleteUser(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUser request
+	GetUser(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateUserWithBody request with any body
+	UpdateUserWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateUser(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) LoginWithBody(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1519,6 +1765,90 @@ func (c *Client) UpdateTimeWithBody(ctx context.Context, id int, contentType str
 
 func (c *Client) UpdateTime(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTimeRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUsers(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUsersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUser(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteUser(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteUserRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUser(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUserWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUser(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3187,6 +3517,312 @@ func NewUpdateTimeRequestWithBody(server string, id int, contentType string, bod
 	return req, nil
 }
 
+// NewGetUsersRequest generates requests for GetUsers
+func NewGetUsersRequest(server string, params *GetUsersParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.LocationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", false, "location_id", runtime.ParamLocationQuery, *params.LocationId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ShowPending != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "show_pending", runtime.ParamLocationQuery, *params.ShowPending); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.OnlyPending != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "only_pending", runtime.ParamLocationQuery, *params.OnlyPending); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ShowDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "show_deleted", runtime.ParamLocationQuery, *params.ShowDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.OnlyDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "only_deleted", runtime.ParamLocationQuery, *params.OnlyDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Search != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateUserRequest calls the generic CreateUser builder with application/json body
+func NewCreateUserRequest(server string, body CreateUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateUserRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateUserRequestWithBody generates requests for CreateUser with any type of body
+func NewCreateUserRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteUserRequest generates requests for DeleteUser
+func NewDeleteUserRequest(server string, id int, params *DeleteUserParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.DeletedShifts != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deleted_shifts", runtime.ParamLocationQuery, *params.DeletedShifts); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetUserRequest generates requests for GetUser
+func NewGetUserRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
+func NewUpdateUserRequest(server string, id int, body UpdateUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateUserRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
+func NewUpdateUserRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -3330,6 +3966,25 @@ type ClientWithResponsesInterface interface {
 	UpdateTimeWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTimeResponse, error)
 
 	UpdateTimeWithResponse(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeResponse, error)
+
+	// GetUsersWithResponse request
+	GetUsersWithResponse(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*GetUsersResponse, error)
+
+	// CreateUserWithBodyWithResponse request with any body
+	CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
+
+	CreateUserWithResponse(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
+
+	// DeleteUserWithResponse request
+	DeleteUserWithResponse(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+
+	// GetUserWithResponse request
+	GetUserWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetUserResponse, error)
+
+	// UpdateUserWithBodyWithResponse request with any body
+	UpdateUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+
+	UpdateUserWithResponse(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 }
 
 type LoginResponse struct {
@@ -4028,6 +4683,136 @@ func (r UpdateTimeResponse) StatusCode() int {
 	return 0
 }
 
+type GetUsersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Users *[]User `json:"users,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUsersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUsersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		User *User `json:"user,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Success *bool `json:"success,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		User *User `json:"user,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		User *User `json:"user,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // LoginWithBodyWithResponse request with arbitrary body returning *LoginResponse
 func (c *ClientWithResponses) LoginWithBodyWithResponse(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error) {
 	rsp, err := c.LoginWithBody(ctx, params, contentType, body, reqEditors...)
@@ -4355,6 +5140,67 @@ func (c *ClientWithResponses) UpdateTimeWithResponse(ctx context.Context, id int
 		return nil, err
 	}
 	return ParseUpdateTimeResponse(rsp)
+}
+
+// GetUsersWithResponse request returning *GetUsersResponse
+func (c *ClientWithResponses) GetUsersWithResponse(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*GetUsersResponse, error) {
+	rsp, err := c.GetUsers(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUsersResponse(rsp)
+}
+
+// CreateUserWithBodyWithResponse request with arbitrary body returning *CreateUserResponse
+func (c *ClientWithResponses) CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error) {
+	rsp, err := c.CreateUserWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateUserWithResponse(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error) {
+	rsp, err := c.CreateUser(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserResponse(rsp)
+}
+
+// DeleteUserWithResponse request returning *DeleteUserResponse
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+	rsp, err := c.DeleteUser(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteUserResponse(rsp)
+}
+
+// GetUserWithResponse request returning *GetUserResponse
+func (c *ClientWithResponses) GetUserWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetUserResponse, error) {
+	rsp, err := c.GetUser(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUserResponse(rsp)
+}
+
+// UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserResponse(rsp)
 }
 
 // ParseLoginResponse parses an HTTP response from a LoginWithResponse call
@@ -5381,6 +6227,216 @@ func ParseUpdateTimeResponse(rsp *http.Response) (*UpdateTimeResponse, error) {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
 			Time *Time `json:"time,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUsersResponse parses an HTTP response from a GetUsersWithResponse call
+func ParseGetUsersResponse(rsp *http.Response) (*GetUsersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUsersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Users *[]User `json:"users,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateUserResponse parses an HTTP response from a CreateUserWithResponse call
+func ParseCreateUserResponse(rsp *http.Response) (*CreateUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			User *User `json:"user,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteUserResponse parses an HTTP response from a DeleteUserWithResponse call
+func ParseDeleteUserResponse(rsp *http.Response) (*DeleteUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Success *bool `json:"success,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUserResponse parses an HTTP response from a GetUserWithResponse call
+func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			User *User `json:"user,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateUserResponse parses an HTTP response from a UpdateUserWithResponse call
+func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			User *User `json:"user,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

@@ -39,7 +39,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 | **/2/shifts/{id}/assign**                 |  [x]   |       |
 | **/2/shifts/{id}/history**                |  [x]   |       |
 | **/2/shifts/{id}/swapusers**              |  [x]   |       |
-| **/2/users**                              |  [ ]   |       |
+| **/2/users**                              |  [x]   |       |
 | **/2/users/{id}**                         |  [ ]   |       |
 | **/2/users/avatar/{id}**                  |  [ ]   |       |
 | **/2/users/bulkupdate**                   |  [ ]   |       |

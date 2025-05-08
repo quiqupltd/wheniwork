@@ -26,7 +26,7 @@ Package is in active development
 | /2/shifts/{id}/assign                 | Assign multiple users to an OpenShift       |    [x]    |
 | /2/shifts/{id}/history                | Fetch shift history                         |    [x]    |
 | /2/shifts/{id}/swapusers              | Swap users on a shift                       |    [ ]    |
-| /2/users                              | List or Create Users                        |    [ ]    |
+| /2/users                              | List or Create Users                        |    [x]    |
 | /2/users/{id}                         | Get User                                    |    [ ]    |
 | /2/users/avatar/{id}                  | Get User Avatar                             |    [ ]    |
 | /2/users/bulkupdate                   | Bulk Update Users                           |    [ ]    |

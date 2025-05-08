@@ -20,6 +20,8 @@ tags:
     description: List Times
   - name: Sites
     description: List Sites
+  - name: Users
+    description: List Users
 
 # Ignore this for linting its ok
 .default_response: &default_response
@@ -1126,6 +1128,190 @@ paths:
                       $ref: '#/components/schemas/Shift'
         default: *default_response
 
+  /2/users:
+    get:
+      summary: List Users
+      operationId: GetUsers
+      description: List all the users in your account
+      tags:
+        - Users
+      parameters:
+        - name: location_id
+          in: query
+          description: One or more location IDs by which to limit results
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+            minItems: 1
+          style: form
+          explode: false
+        - name: show_pending
+          in: query
+          description: Include pending users in results. Defaults to true.
+          required: false
+          schema:
+            type: boolean
+            example: true
+        - name: only_pending
+          in: query
+          description: Include ONLY pending users in results. Defaults to false.
+          required: false
+          schema:
+            type: boolean
+            example: false
+        - name: show_deleted
+          in: query
+          description: Include deleted users in results. Defaults to false.
+          required: false
+          schema:
+            type: boolean
+            example: false
+        - name: only_deleted
+          in: query
+          description: Only include deleted/archived users in results. Defaults to false.
+          required: false
+          schema:
+            type: boolean
+            example: false
+        - name: search
+          in: query
+          description: Optional string to search by in users first name, last name, or email.
+          required: false
+          schema:
+            type: string
+            example: ''
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '404': *not_found_response
+        default: *default_response
+    post:
+      summary: Create User
+      operationId: CreateUser
+      description: Used to create a user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '404': *not_found_response
+        default: *default_response
+
+  /2/users/{id}:
+    get:
+      summary: Get User
+      operationId: GetUser
+      description: Get a single user by ID
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '404': *not_found_response
+        default: *default_response
+    put:
+      summary: Update User
+      operationId: UpdateUser
+      description: Updates a single user
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '404': *not_found_response
+        default: *default_response
+    delete:
+      summary: Delete User
+      operationId: DeleteUser
+      description: Delete an existing user. This action can be reversed.
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+        - name: deleted_shifts
+          in: query
+          description: Indicates whether or not to delete this user's future shifts. If not deleted, those shifts will be moved to Open Shifts.
+          required: false
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404': *not_found_response
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -2131,3 +2317,23 @@ components:
               type: number
               description: Present in `created`, `current`, `break_changed` and `break_removed` events . The new value of shift break.
               example: 15
+
+    UserRequest:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            invite:
+              type: boolean
+              description: Whether an invite should be sent upon user creation. When missing or not false, an invite is sent by default
+              example: false
+
+    UpdateUserRequest:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            reactivate:
+              type: boolean
+              description: Whether to reactivate a previously deleted user.
+              example: true
