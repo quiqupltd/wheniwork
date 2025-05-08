@@ -601,6 +601,33 @@ type BulkUpdateShiftsParams struct {
 	AssignOpenshiftInstances *bool `form:"assign_openshift_instances,omitempty" json:"assign_openshift_instances,omitempty"`
 }
 
+// GetEligibleUsersForOpenShiftParams defines parameters for GetEligibleUsersForOpenShift.
+type GetEligibleUsersForOpenShiftParams struct {
+	// Id The ID of the shift
+	Id *int `form:"id,omitempty" json:"id,omitempty"`
+
+	// Start Start time of the potential shift (required if Shift ID not present)
+	Start *time.Time `form:"start,omitempty" json:"start,omitempty"`
+
+	// End End time of the potential shift (required if Shift ID not present)
+	End *time.Time `form:"end,omitempty" json:"end,omitempty"`
+
+	// PositionId Position ID of the potential shift (required if Shift ID not present)
+	PositionId *string `form:"position_id,omitempty" json:"position_id,omitempty"`
+
+	// LocationId Location ID of the potential shift (required if Shift ID not present)
+	LocationId *string `form:"location_id,omitempty" json:"location_id,omitempty"`
+
+	// IsShared Is the shift a shared OpenShift
+	IsShared *bool `form:"is_shared,omitempty" json:"is_shared,omitempty"`
+
+	// IncludeObjects Include user locations and positions in output
+	IncludeObjects *bool `form:"include_objects,omitempty" json:"include_objects,omitempty"`
+
+	// Tags A set of tag IDs to compare the eligible users against
+	Tags *[]string `form:"tags,omitempty" json:"tags,omitempty"`
+}
+
 // DeleteShiftParams defines parameters for DeleteShift.
 type DeleteShiftParams struct {
 	// Message Used to notify the shift's assignee that their shift has been deleted. Your message will be added to the notification email. If you want to send the notification email without a message, simply send a single space. Must be URL encoded.
@@ -767,6 +794,9 @@ type ClientInterface interface {
 
 	BulkUpdateShifts(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetEligibleUsersForOpenShift request
+	GetEligibleUsersForOpenShift(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteShift request
 	DeleteShift(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -867,6 +897,18 @@ func (c *Client) BulkUpdateShiftsWithBody(ctx context.Context, params *BulkUpdat
 
 func (c *Client) BulkUpdateShifts(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewBulkUpdateShiftsRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetEligibleUsersForOpenShift(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEligibleUsersForOpenShiftRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1519,6 +1561,167 @@ func NewBulkUpdateShiftsRequestWithBody(server string, params *BulkUpdateShiftsP
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetEligibleUsersForOpenShiftRequest generates requests for GetEligibleUsersForOpenShift
+func NewGetEligibleUsersForOpenShiftRequest(server string, params *GetEligibleUsersForOpenShiftParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/eligible")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "id", runtime.ParamLocationQuery, *params.Id); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Start != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "start", runtime.ParamLocationQuery, *params.Start); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.End != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "end", runtime.ParamLocationQuery, *params.End); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PositionId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "position_id", runtime.ParamLocationQuery, *params.PositionId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.LocationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "location_id", runtime.ParamLocationQuery, *params.LocationId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsShared != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "is_shared", runtime.ParamLocationQuery, *params.IsShared); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludeObjects != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_objects", runtime.ParamLocationQuery, *params.IncludeObjects); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Tags != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", false, "tags", runtime.ParamLocationQuery, *params.Tags); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -2280,6 +2483,9 @@ type ClientWithResponsesInterface interface {
 
 	BulkUpdateShiftsWithResponse(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateShiftsResponse, error)
 
+	// GetEligibleUsersForOpenShiftWithResponse request
+	GetEligibleUsersForOpenShiftWithResponse(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*GetEligibleUsersForOpenShiftResponse, error)
+
 	// DeleteShiftWithResponse request
 	DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error)
 
@@ -2413,6 +2619,32 @@ func (r BulkUpdateShiftsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r BulkUpdateShiftsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetEligibleUsersForOpenShiftResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Users *[]User `json:"users,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEligibleUsersForOpenShiftResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEligibleUsersForOpenShiftResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2819,6 +3051,15 @@ func (c *ClientWithResponses) BulkUpdateShiftsWithResponse(ctx context.Context, 
 	return ParseBulkUpdateShiftsResponse(rsp)
 }
 
+// GetEligibleUsersForOpenShiftWithResponse request returning *GetEligibleUsersForOpenShiftResponse
+func (c *ClientWithResponses) GetEligibleUsersForOpenShiftWithResponse(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*GetEligibleUsersForOpenShiftResponse, error) {
+	rsp, err := c.GetEligibleUsersForOpenShift(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEligibleUsersForOpenShiftResponse(rsp)
+}
+
 // DeleteShiftWithResponse request returning *DeleteShiftResponse
 func (c *ClientWithResponses) DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error) {
 	rsp, err := c.DeleteShift(ctx, id, params, reqEditors...)
@@ -3088,6 +3329,48 @@ func ParseBulkUpdateShiftsResponse(rsp *http.Response) (*BulkUpdateShiftsRespons
 		var dest struct {
 			// Shifts Array of shift objects to update
 			Shifts *[]Shift `json:"shifts,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetEligibleUsersForOpenShiftResponse parses an HTTP response from a GetEligibleUsersForOpenShiftWithResponse call
+func ParseGetEligibleUsersForOpenShiftResponse(rsp *http.Response) (*GetEligibleUsersForOpenShiftResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEligibleUsersForOpenShiftResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Users *[]User `json:"users,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
