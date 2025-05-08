@@ -1355,6 +1355,34 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/users/bulkupdate:
+    post:
+      summary: Create A Batch of Users
+      operationId: BulkCreateUsers
+      description: |
+        Used to create a batch of users. Limit of 50 users at a time to prevent long requests.
+        Each user object should follow the UserRequest schema. Optionally, set `invite` to false to skip sending invites.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              maxItems: 50
+              items:
+                $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUserResponse'
+        '404': *not_found_response
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -2388,3 +2416,46 @@ components:
           schema:
             type: string
             format: binary
+
+    BulkUserResponse:
+      description: Response for both Valid/Invalid requests
+      type: object
+      properties:
+        count:
+          type: integer
+          description: The total number of invites sent.
+          example: 3
+        validRows:
+          type: array
+          description: List of valid user rows
+          items:
+            type: object
+            properties:
+              row:
+                type: integer
+                description: The row number in the input array.
+                example: 3
+              user:
+                $ref: '#/components/schemas/User'
+        invalidRows:
+          type: array
+          description: List of invalid user rows
+          items:
+            type: object
+            properties:
+              row:
+                type: integer
+                description: The row number in the input array.
+                example: 3
+              user:
+                $ref: '#/components/schemas/User'
+        locations:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+          description: An array of locations (schedules) assigned to this user.
+        success:
+          type: boolean
+          description: True if at least one invite was sent.
+          example: true

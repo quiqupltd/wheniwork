@@ -153,6 +153,32 @@ type BaseScheduledBreak struct {
 // BulkEditShiftRequest Array of shift objects to update
 type BulkEditShiftRequest = []ShiftBulk
 
+// BulkUserResponse Response for both Valid/Invalid requests
+type BulkUserResponse struct {
+	// Count The total number of invites sent.
+	Count *int `json:"count,omitempty"`
+
+	// InvalidRows List of invalid user rows
+	InvalidRows *[]struct {
+		// Row The row number in the input array.
+		Row  *int  `json:"row,omitempty"`
+		User *User `json:"user,omitempty"`
+	} `json:"invalidRows,omitempty"`
+
+	// Locations An array of locations (schedules) assigned to this user.
+	Locations *[]int `json:"locations,omitempty"`
+
+	// Success True if at least one invite was sent.
+	Success *bool `json:"success,omitempty"`
+
+	// ValidRows List of valid user rows
+	ValidRows *[]struct {
+		// Row The row number in the input array.
+		Row  *int  `json:"row,omitempty"`
+		User *User `json:"user,omitempty"`
+	} `json:"validRows,omitempty"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	Code    *string                 `json:"code,omitempty"`
@@ -1080,6 +1106,9 @@ type CreateOrUpdateUserAvatarParams struct {
 	ContentType string `json:"content-type"`
 }
 
+// BulkCreateUsersJSONBody defines parameters for BulkCreateUsers.
+type BulkCreateUsersJSONBody = []UserRequest
+
 // DeleteUserParams defines parameters for DeleteUser.
 type DeleteUserParams struct {
 	// DeletedShifts Indicates whether or not to delete this user's future shifts. If not deleted, those shifts will be moved to Open Shifts.
@@ -1127,6 +1156,9 @@ type UpdateTimeJSONRequestBody = TimeRequest
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
 type CreateUserJSONRequestBody = UserRequest
+
+// BulkCreateUsersJSONRequestBody defines body for BulkCreateUsers for application/json ContentType.
+type BulkCreateUsersJSONRequestBody = BulkCreateUsersJSONBody
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
@@ -1315,6 +1347,11 @@ type ClientInterface interface {
 
 	// CreateOrUpdateUserAvatarWithBody request with any body
 	CreateOrUpdateUserAvatarWithBody(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkCreateUsersWithBody request with any body
+	BulkCreateUsersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkCreateUsers(ctx context.Context, body BulkCreateUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
 	DeleteUser(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1822,6 +1859,30 @@ func (c *Client) CreateUser(ctx context.Context, body CreateUserJSONRequestBody,
 
 func (c *Client) CreateOrUpdateUserAvatarWithBody(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateOrUpdateUserAvatarRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateUsersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateUsersRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateUsers(ctx context.Context, body BulkCreateUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateUsersRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3756,6 +3817,46 @@ func NewCreateOrUpdateUserAvatarRequestWithBody(server string, id int, params *C
 	return req, nil
 }
 
+// NewBulkCreateUsersRequest calls the generic BulkCreateUsers builder with application/json body
+func NewBulkCreateUsersRequest(server string, body BulkCreateUsersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkCreateUsersRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBulkCreateUsersRequestWithBody generates requests for BulkCreateUsers with any type of body
+func NewBulkCreateUsersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/bulkupdate")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteUserRequest generates requests for DeleteUser
 func NewDeleteUserRequest(server string, id int, params *DeleteUserParams) (*http.Request, error) {
 	var err error
@@ -4047,6 +4148,11 @@ type ClientWithResponsesInterface interface {
 
 	// CreateOrUpdateUserAvatarWithBodyWithResponse request with any body
 	CreateOrUpdateUserAvatarWithBodyWithResponse(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrUpdateUserAvatarResponse, error)
+
+	// BulkCreateUsersWithBodyWithResponse request with any body
+	BulkCreateUsersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateUsersResponse, error)
+
+	BulkCreateUsersWithResponse(ctx context.Context, body BulkCreateUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateUsersResponse, error)
 
 	// DeleteUserWithResponse request
 	DeleteUserWithResponse(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
@@ -4834,6 +4940,30 @@ func (r CreateOrUpdateUserAvatarResponse) StatusCode() int {
 	return 0
 }
 
+type BulkCreateUsersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BulkUserResponse
+	JSON404      *Error
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkCreateUsersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkCreateUsersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5274,6 +5404,23 @@ func (c *ClientWithResponses) CreateOrUpdateUserAvatarWithBodyWithResponse(ctx c
 		return nil, err
 	}
 	return ParseCreateOrUpdateUserAvatarResponse(rsp)
+}
+
+// BulkCreateUsersWithBodyWithResponse request with arbitrary body returning *BulkCreateUsersResponse
+func (c *ClientWithResponses) BulkCreateUsersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateUsersResponse, error) {
+	rsp, err := c.BulkCreateUsersWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateUsersResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkCreateUsersWithResponse(ctx context.Context, body BulkCreateUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateUsersResponse, error) {
+	rsp, err := c.BulkCreateUsers(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateUsersResponse(rsp)
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
@@ -6462,6 +6609,46 @@ func ParseCreateOrUpdateUserAvatarResponse(rsp *http.Response) (*CreateOrUpdateU
 		var dest struct {
 			User *User `json:"user,omitempty"`
 		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkCreateUsersResponse parses an HTTP response from a BulkCreateUsersWithResponse call
+func ParseBulkCreateUsersResponse(rsp *http.Response) (*BulkCreateUsersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkCreateUsersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BulkUserResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

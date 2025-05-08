@@ -29,7 +29,7 @@ Package is in active development
 | /2/users                              | List or Create Users                        |     ✓     |
 | /2/users/{id}                         | Get User                                    |           |
 | /2/users/avatar/{id}                  | Get User Avatar                             |     ✓     |
-| /2/users/bulkupdate                   | Bulk Update Users                           |           |
+| /2/users/bulkupdate                   | Bulk Update Users                           |     ✓     |
 | /2/users/invite                       | Invite Users                                |           |
 | /2/users/invite/{id}                  | Invite single user                          |           |
 | /2/users/profile                      | Get User Profile                            |           |
