@@ -101,6 +101,30 @@ type Login struct {
 	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
 }
 
+// OpenShiftApprovalRequest defines model for OpenShiftApprovalRequest.
+type OpenShiftApprovalRequest struct {
+	// ApprovedAt The date and time when the OpenShift Approval request was approved
+	ApprovedAt *time.Time `json:"approved_at,omitempty"`
+
+	// ApprovedBy The ID of the user who approved the OpenShift Approval request
+	ApprovedBy *int `json:"approved_by,omitempty"`
+
+	// Id The ID of the OpenShift Approval request
+	Id *int `json:"id,omitempty"`
+
+	// IsApproved Whether the OpenShift Approval request is approved
+	IsApproved *bool `json:"is_approved,omitempty"`
+
+	// Notes Notes about the OpenShift Approval request
+	Notes *string `json:"notes,omitempty"`
+
+	// ShiftId The ID of the shift associated with the OpenShift Approval request
+	ShiftId *int `json:"shift_id,omitempty"`
+
+	// UserId The ID of the user associated with the OpenShift Approval request
+	UserId *int `json:"user_id,omitempty"`
+}
+
 // Place defines model for Place.
 type Place struct {
 	Address      *string    `json:"address,omitempty"`
@@ -188,6 +212,12 @@ type Shift struct {
 
 	// UserId The user assigned to the shift. Set to `0` for an Open Shift.
 	UserId *int `json:"user_id,omitempty"`
+}
+
+// ShiftAssignRequest defines model for ShiftAssignRequest.
+type ShiftAssignRequest struct {
+	// ShiftIds Array of shift IDs
+	ShiftIds *[]string `json:"shift_ids,omitempty"`
 }
 
 // ShiftBulk defines model for ShiftBulk.
@@ -759,6 +789,9 @@ type UnassignShiftsJSONRequestBody = ShiftUnassignRequest
 // UnpublishShiftsJSONRequestBody defines body for UnpublishShifts for application/json ContentType.
 type UnpublishShiftsJSONRequestBody = ShiftPublish
 
+// AssignUsersToOpenShiftJSONRequestBody defines body for AssignUsersToOpenShift for application/json ContentType.
+type AssignUsersToOpenShiftJSONRequestBody = ShiftAssignRequest
+
 // UpdateShiftJSONRequestBody defines body for UpdateShift for application/json ContentType.
 type UpdateShiftJSONRequestBody UpdateShiftJSONBody
 
@@ -893,6 +926,11 @@ type ClientInterface interface {
 
 	// GetShift request
 	GetShift(ctx context.Context, id int, params *GetShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AssignUsersToOpenShiftWithBody request with any body
+	AssignUsersToOpenShiftWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AssignUsersToOpenShift(ctx context.Context, id int, body AssignUsersToOpenShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateShiftWithBody request with any body
 	UpdateShiftWithBody(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1147,6 +1185,30 @@ func (c *Client) DeleteShift(ctx context.Context, id int, params *DeleteShiftPar
 
 func (c *Client) GetShift(ctx context.Context, id int, params *GetShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetShiftRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AssignUsersToOpenShiftWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAssignUsersToOpenShiftRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AssignUsersToOpenShift(ctx context.Context, id int, body AssignUsersToOpenShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAssignUsersToOpenShiftRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2255,6 +2317,53 @@ func NewGetShiftRequest(server string, id int, params *GetShiftParams) (*http.Re
 	return req, nil
 }
 
+// NewAssignUsersToOpenShiftRequest calls the generic AssignUsersToOpenShift builder with application/json body
+func NewAssignUsersToOpenShiftRequest(server string, id int, body AssignUsersToOpenShiftJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAssignUsersToOpenShiftRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewAssignUsersToOpenShiftRequestWithBody generates requests for AssignUsersToOpenShift with any type of body
+func NewAssignUsersToOpenShiftRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewUpdateShiftRequest calls the generic UpdateShift builder with application/json body
 func NewUpdateShiftRequest(server string, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3006,6 +3115,11 @@ type ClientWithResponsesInterface interface {
 	// GetShiftWithResponse request
 	GetShiftWithResponse(ctx context.Context, id int, params *GetShiftParams, reqEditors ...RequestEditorFn) (*GetShiftResponse, error)
 
+	// AssignUsersToOpenShiftWithBodyWithResponse request with any body
+	AssignUsersToOpenShiftWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AssignUsersToOpenShiftResponse, error)
+
+	AssignUsersToOpenShiftWithResponse(ctx context.Context, id int, body AssignUsersToOpenShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*AssignUsersToOpenShiftResponse, error)
+
 	// UpdateShiftWithBodyWithResponse request with any body
 	UpdateShiftWithBodyWithResponse(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
 
@@ -3358,6 +3472,32 @@ func (r GetShiftResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetShiftResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AssignUsersToOpenShiftResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Openshiftapprovalrequests *[]OpenShiftApprovalRequest `json:"openshiftapprovalrequests,omitempty"`
+		Shifts                    *[]Shift                    `json:"shifts,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r AssignUsersToOpenShiftResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AssignUsersToOpenShiftResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3849,6 +3989,23 @@ func (c *ClientWithResponses) GetShiftWithResponse(ctx context.Context, id int, 
 		return nil, err
 	}
 	return ParseGetShiftResponse(rsp)
+}
+
+// AssignUsersToOpenShiftWithBodyWithResponse request with arbitrary body returning *AssignUsersToOpenShiftResponse
+func (c *ClientWithResponses) AssignUsersToOpenShiftWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AssignUsersToOpenShiftResponse, error) {
+	rsp, err := c.AssignUsersToOpenShiftWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAssignUsersToOpenShiftResponse(rsp)
+}
+
+func (c *ClientWithResponses) AssignUsersToOpenShiftWithResponse(ctx context.Context, id int, body AssignUsersToOpenShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*AssignUsersToOpenShiftResponse, error) {
+	rsp, err := c.AssignUsersToOpenShift(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAssignUsersToOpenShiftResponse(rsp)
 }
 
 // UpdateShiftWithBodyWithResponse request with arbitrary body returning *UpdateShiftResponse
@@ -4443,6 +4600,42 @@ func ParseGetShiftResponse(rsp *http.Response) (*GetShiftResponse, error) {
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAssignUsersToOpenShiftResponse parses an HTTP response from a AssignUsersToOpenShiftWithResponse call
+func ParseAssignUsersToOpenShiftResponse(rsp *http.Response) (*AssignUsersToOpenShiftResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AssignUsersToOpenShiftResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Openshiftapprovalrequests *[]OpenShiftApprovalRequest `json:"openshiftapprovalrequests,omitempty"`
+			Shifts                    *[]Shift                    `json:"shifts,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error

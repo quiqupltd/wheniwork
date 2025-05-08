@@ -384,6 +384,45 @@ paths:
                     description: The IDs of the shifts that were deleted
         '404': *not_found_response
         default: *default_response
+    post:
+      summary: Assign multiple users to an OpenShift
+      operationId: AssignUsersToOpenShift
+      description: |
+        Assign multiple users to an OpenShift with multiple instances.
+
+        This can also be used to approve multiple users for an OpenShift that requires approval.
+      tags:
+        - Shifts
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the shift
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftAssignRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shifts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+                  openshiftapprovalrequests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OpenShiftApprovalRequest'
+        default: *default_response
 
   /2/shifts/{id}/swapusers:
     get:
@@ -1923,3 +1962,46 @@ components:
           items:
             type: string
             example: '555555'
+
+    ShiftAssignRequest:
+      type: object
+      properties:
+        shift_ids:
+          description: Array of shift IDs
+          type: array
+          items:
+            type: string
+            example: '555555'
+
+    OpenShiftApprovalRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+          description: The ID of the OpenShift Approval request
+        shift_id:
+          type: integer
+          example: 5451
+          description: The ID of the shift associated with the OpenShift Approval request
+        user_id:
+          type: integer
+          example: 101
+          description: The ID of the user associated with the OpenShift Approval request
+        is_approved:
+          type: boolean
+          example: true
+          description: Whether the OpenShift Approval request is approved
+        approved_at:
+          type: string
+          format: date-time
+          example: '2023-05-08T12:00:00'
+          description: The date and time when the OpenShift Approval request was approved
+        approved_by:
+          type: integer
+          example: 100
+          description: The ID of the user who approved the OpenShift Approval request
+        notes:
+          type: string
+          example: Approved for 2 hours on 2023-05-08
+          description: Notes about the OpenShift Approval request
