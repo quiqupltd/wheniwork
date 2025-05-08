@@ -4,7 +4,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 
 **Instructions:**
 
-- Each API route is listed below. For each route follow these steps DO NO SKIP ANY STEPS:
+- Each API route is listed below. For each route follow these steps, IN ORDER and DO NO SKIP ANY STEPS:
 
   1. Create a new branch using feat/<apislug>
   2. Migrate the route to `apispec.yml` (ensure OpenAPI 3.0.0 compliance).
@@ -37,7 +37,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 | **/2/shifts/unassign**                    |  [x]   |       |
 | **/2/shifts/unpublish**                   |  [x]   |       |
 | **/2/shifts/{id}/assign**                 |  [x]   |       |
-| **/2/shifts/{id}/history**                |  [ ]   |       |
+| **/2/shifts/{id}/history**                |  [x]   |       |
 | **/2/shifts/{id}/swapusers**              |  [x]   |       |
 | **/2/users**                              |  [ ]   |       |
 | **/2/users/{id}**                         |  [ ]   |       |

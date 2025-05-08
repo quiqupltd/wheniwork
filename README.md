@@ -24,7 +24,7 @@ Package is in active development
 | /2/shifts/unassign                    | Unassign/Release Shifts                     |    [x]    |
 | /2/shifts/unpublish                   | Unpublish Shifts                            |    [ ]    |
 | /2/shifts/{id}/assign                 | Assign multiple users to an OpenShift       |    [x]    |
-| /2/shifts/{id}/history                | Fetch shift history                         |    [ ]    |
+| /2/shifts/{id}/history                | Fetch shift history                         |    [x]    |
 | /2/shifts/{id}/swapusers              | Swap users on a shift                       |    [ ]    |
 | /2/users                              | List or Create Users                        |    [ ]    |
 | /2/users/{id}                         | Get User                                    |    [ ]    |
@@ -71,3 +71,5 @@ Package is in active development
 | /2/timezones                          | List Timezones                              |    [ ]    |
 | /2/timezones/{id}                     | Get Timezone                                |    [ ]    |
 | /2/users/alerts                       | Get User Alerts                             |    [ ]    |
+
+/2/shifts/{id}/history is now supported in the OpenAPI 3.0.0 spec and available for use.
