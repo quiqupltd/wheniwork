@@ -5,13 +5,17 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 **Instructions:**
 
 - Each API route is listed below. For each route:
-  1. Migrate the route to `apispec.yml` (ensure OpenAPI 3.0.0 compliance).
-  2. Migrate all referenced schemas (e.g., request/response bodies) to `apispec.yml`.
-  3. Ensure the new route has a default response.
-  4. Use multi-line YAML for any multi-line text fields (see example in this file).
-  5. Run `task generate` to verify the code generator works (no errors).
-  6. Mark the task as complete in this table.
-  7. Update the main [readme](README.md) for supported APIs
+
+  1. Create a new branch using feat/<apislug>
+  2. Migrate the route to `apispec.yml` (ensure OpenAPI 3.0.0 compliance).
+  3. Migrate all referenced schemas (e.g., request/response bodies) to `apispec.yml`.
+  4. Ensure the new route has a default response.
+  5. Use multi-line YAML for any multi-line text fields (see example in this file).
+  6. Run `task generate` to verify the code generator works (no errors).
+  7. Mark the task as complete in this table.
+  8. Update the main [readme](README.md) for supported APIs
+  9. Use github MCP tool to open a new pull request
+
 - Add notes or issues as needed in the Notes column.
 
 ---
@@ -21,7 +25,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 | Endpoint                                  | Status | Notes |
 | ----------------------------------------- | :----: | ----- |
 | **/2/sites**                              |  [x]   |       |
-| **/2/sites/{id}**                         |  [ ]   |       |
+| **/2/sites/{id}**                         |  [x]   |       |
 | **/2/shifts**                             |  [x]   |       |
 | **/2/shifts/{id}**                        |  [x]   |       |
 | **/2/shifts/bulk**                        |  [ ]   |       |

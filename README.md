@@ -15,7 +15,7 @@ Package is in active development
 | /2/times                              | List or Create Times                        |    [x]    |
 | /2/times/{id}                         | Get, Update, or Delete a single time by ID  |    [x]    |
 | /2/sites                              | List or Create Sites                        |    [x]    |
-| /2/sites/{id}                         | Get, Update, or Delete Site                 |    [ ]    |
+| /2/sites/{id}                         | Get, Update, or Delete Site                 |    [x]    |
 | /2/shifts/bulk                        | Bulk Update Shifts                          |    [ ]    |
 | /2/shifts/eligible                    | List eligible users for OpenShift           |    [ ]    |
 | /2/shifts/notify                      | Notify shifts                               |    [ ]    |
