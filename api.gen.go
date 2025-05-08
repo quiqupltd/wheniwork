@@ -320,6 +320,21 @@ type UserRole string
 // UserType A bitwise flag representing additional wage options.
 type UserType int
 
+// LoginJSONBody defines parameters for Login.
+type LoginJSONBody struct {
+	Email    *string `json:"email,omitempty"`
+	Password *string `json:"password,omitempty"`
+}
+
+// LoginParams defines parameters for Login.
+type LoginParams struct {
+	// WKey The developer key
+	WKey string `json:"W-Key"`
+
+	// WUserID The user id
+	WUserID *string `json:"W-UserID,omitempty"`
+}
+
 // GetShiftsParams defines parameters for GetShifts.
 type GetShiftsParams struct {
 	// UserId The user id to filter by
@@ -340,7 +355,7 @@ type GetShiftsParams struct {
 	// IncludeOnlyopen Whether or not to include only open shifts from the user's assigned Schedules.
 	IncludeOnlyopen *bool `form:"include_onlyopen,omitempty" json:"include_onlyopen,omitempty"`
 
-	// IncludeAllopen Whether or to include open shifts across All Schedules. Requires "Manager or Admin access" level.
+	// IncludeAllopen Whether to include open shifts across All Schedules. Requires "Manager or Admin access" level.
 	IncludeAllopen *bool `form:"include_allopen,omitempty" json:"include_allopen,omitempty"`
 
 	// Deleted Whether to include a list of shift IDs ("deleted_ids") that were deleted during the passed time window.
@@ -376,23 +391,40 @@ type GetShiftsParams struct {
 	WUserID *string `json:"W-UserID,omitempty"`
 }
 
-// LoginJSONBody defines parameters for Login.
-type LoginJSONBody struct {
-	Email    *string `json:"email,omitempty"`
-	Password *string `json:"password,omitempty"`
+// DeleteShiftParams defines parameters for DeleteShift.
+type DeleteShiftParams struct {
+	// Message Used to notify the shift's assignee that their shift has been deleted. Your message will be added to the notification email. If you want to send the notification email without a message, simply send a single space. Must be URL encoded.
+	Message *string `form:"message,omitempty" json:"message,omitempty"`
+
+	// Chain Only applies to repeating shifts. Any value will delete the shift and all shifts that come after it on the chain.
+	Chain *string `form:"chain,omitempty" json:"chain,omitempty"`
 }
 
-// LoginParams defines parameters for Login.
-type LoginParams struct {
-	// WKey The developer key
-	WKey string `json:"W-Key"`
-
-	// WUserID The user id
-	WUserID *string `json:"W-UserID,omitempty"`
+// GetShiftParams defines parameters for GetShift.
+type GetShiftParams struct {
+	// IncludeRepeatingShiftsTo End date to include repeating shifts in series, if applicable
+	IncludeRepeatingShiftsTo *time.Time `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
 }
+
+// UpdateShiftJSONBody defines parameters for UpdateShift.
+type UpdateShiftJSONBody struct {
+	union json.RawMessage
+}
+
+// UpdateShiftParams defines parameters for UpdateShift.
+type UpdateShiftParams struct {
+	// IncludeRepeatingShiftsTo End date to include repeating shifts in series, if applicable
+	IncludeRepeatingShiftsTo *time.Time `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
+}
+
+// UpdateShiftJSONBody1 defines parameters for UpdateShift.
+type UpdateShiftJSONBody1 = []Shift
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody LoginJSONBody
+
+// UpdateShiftJSONRequestBody defines body for UpdateShift for application/json ContentType.
+type UpdateShiftJSONRequestBody UpdateShiftJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -467,25 +499,24 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetShifts request
-	GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// LoginWithBody request with any body
 	LoginWithBody(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	Login(ctx context.Context, params *LoginParams, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
 
-func (c *Client) GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetShiftsRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
+	// GetShifts request
+	GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteShift request
+	DeleteShift(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetShift request
+	GetShift(ctx context.Context, id int, params *GetShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateShiftWithBody request with any body
+	UpdateShiftWithBody(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) LoginWithBody(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -510,6 +541,130 @@ func (c *Client) Login(ctx context.Context, params *LoginParams, body LoginJSONR
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+func (c *Client) GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShiftsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteShift(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteShiftRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetShift(ctx context.Context, id int, params *GetShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShiftRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateShiftWithBody(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateShiftRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateShiftRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NewLoginRequest calls the generic Login builder with application/json body
+func NewLoginRequest(server string, params *LoginParams, body LoginJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLoginRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewLoginRequestWithBody generates requests for Login with any type of body
+func NewLoginRequestWithBody(server string, params *LoginParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/login")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-Key", runtime.ParamLocationHeader, params.WKey)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-Key", headerParam0)
+
+		if params.WUserID != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, *params.WUserID)
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("W-UserID", headerParam1)
+		}
+
+	}
+
+	return req, nil
 }
 
 // NewGetShiftsRequest generates requests for GetShifts
@@ -816,27 +971,23 @@ func NewGetShiftsRequest(server string, params *GetShiftsParams) (*http.Request,
 	return req, nil
 }
 
-// NewLoginRequest calls the generic Login builder with application/json body
-func NewLoginRequest(server string, params *LoginParams, body LoginJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
+// NewDeleteShiftRequest generates requests for DeleteShift
+func NewDeleteShiftRequest(server string, id int, params *DeleteShiftParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
 	if err != nil {
 		return nil, err
 	}
-	bodyReader = bytes.NewReader(buf)
-	return NewLoginRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewLoginRequestWithBody generates requests for Login with any type of body
-func NewLoginRequestWithBody(server string, params *LoginParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/login")
+	operationPath := fmt.Sprintf("/2/shifts/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -846,36 +997,173 @@ func NewLoginRequestWithBody(server string, params *LoginParams, contentType str
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Message != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "message", runtime.ParamLocationQuery, *params.Message); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Chain != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain", runtime.ParamLocationQuery, *params.Chain); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetShiftRequest generates requests for GetShift
+func NewGetShiftRequest(server string, id int, params *GetShiftParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.IncludeRepeatingShiftsTo != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_repeating_shifts_to", runtime.ParamLocationQuery, *params.IncludeRepeatingShiftsTo); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateShiftRequest calls the generic UpdateShift builder with application/json body
+func NewUpdateShiftRequest(server string, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateShiftRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateShiftRequestWithBody generates requests for UpdateShift with any type of body
+func NewUpdateShiftRequestWithBody(server string, id int, params *UpdateShiftParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.IncludeRepeatingShiftsTo != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_repeating_shifts_to", runtime.ParamLocationQuery, *params.IncludeRepeatingShiftsTo); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add("Content-Type", contentType)
-
-	if params != nil {
-
-		var headerParam0 string
-
-		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-Key", runtime.ParamLocationHeader, params.WKey)
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("W-Key", headerParam0)
-
-		if params.WUserID != nil {
-			var headerParam1 string
-
-			headerParam1, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, *params.WUserID)
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("W-UserID", headerParam1)
-		}
-
-	}
 
 	return req, nil
 }
@@ -923,13 +1211,53 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetShiftsWithResponse request
-	GetShiftsWithResponse(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*GetShiftsResponse, error)
-
 	// LoginWithBodyWithResponse request with any body
 	LoginWithBodyWithResponse(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error)
 
 	LoginWithResponse(ctx context.Context, params *LoginParams, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*LoginResponse, error)
+
+	// GetShiftsWithResponse request
+	GetShiftsWithResponse(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*GetShiftsResponse, error)
+
+	// DeleteShiftWithResponse request
+	DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error)
+
+	// GetShiftWithResponse request
+	GetShiftWithResponse(ctx context.Context, id int, params *GetShiftParams, reqEditors ...RequestEditorFn) (*GetShiftResponse, error)
+
+	// UpdateShiftWithBodyWithResponse request with any body
+	UpdateShiftWithBodyWithResponse(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
+
+	UpdateShiftWithResponse(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
+}
+
+type LoginResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Accounts *[]Account `json:"accounts,omitempty"`
+		Login    *Login     `json:"login,omitempty"`
+		Token    *string    `json:"token,omitempty"`
+		Users    *[]User    `json:"users,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r LoginResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LoginResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type GetShiftsResponse struct {
@@ -965,21 +1293,22 @@ func (r GetShiftsResponse) StatusCode() int {
 	return 0
 }
 
-type LoginResponse struct {
+type DeleteShiftResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		Accounts *[]Account `json:"accounts,omitempty"`
-		Login    *Login     `json:"login,omitempty"`
-		Token    *string    `json:"token,omitempty"`
-		Users    *[]User    `json:"users,omitempty"`
+		// Deleted The IDs of the shifts that were deleted
+		Deleted *[]int `json:"deleted,omitempty"`
+
+		// Success Whether deletion was successful. If absent, it means nothing was actually deleted.
+		Success *bool `json:"success,omitempty"`
 	}
 	JSON404     *Error
 	JSONDefault *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r LoginResponse) Status() string {
+func (r DeleteShiftResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -987,20 +1316,76 @@ func (r LoginResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r LoginResponse) StatusCode() int {
+func (r DeleteShiftResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// GetShiftsWithResponse request returning *GetShiftsResponse
-func (c *ClientWithResponses) GetShiftsWithResponse(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*GetShiftsResponse, error) {
-	rsp, err := c.GetShifts(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
+type GetShiftResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. If the fetched shift has a shift chain, we will insert all the shifts on that chain from the first up to the date specified in the parameter.
+		RepeatingShifts *[]Shift `json:"repeating_shifts,omitempty"`
+		Shift           *Shift   `json:"shift,omitempty"`
+
+		// Shiftchains Any shift chain this shift is a part of
+		Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
 	}
-	return ParseGetShiftsResponse(rsp)
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetShiftResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetShiftResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateShiftResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Deleted A list of shift IDs that were deleted as a result of the update. Applicable for updates to repeating shifts that impact future shifts on the same chain.
+		Deleted *[]int `json:"deleted,omitempty"`
+
+		// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. We will insert the created or edited shifts from the beginning of the chain up to the date specified in the parameter.
+		RepeatingShifts *[]Shift `json:"repeating_shifts,omitempty"`
+		Shift           *Shift   `json:"shift,omitempty"`
+
+		// Shiftchains Any shift chain this shift is a part of
+		Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateShiftResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateShiftResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 // LoginWithBodyWithResponse request with arbitrary body returning *LoginResponse
@@ -1018,6 +1403,95 @@ func (c *ClientWithResponses) LoginWithResponse(ctx context.Context, params *Log
 		return nil, err
 	}
 	return ParseLoginResponse(rsp)
+}
+
+// GetShiftsWithResponse request returning *GetShiftsResponse
+func (c *ClientWithResponses) GetShiftsWithResponse(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*GetShiftsResponse, error) {
+	rsp, err := c.GetShifts(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetShiftsResponse(rsp)
+}
+
+// DeleteShiftWithResponse request returning *DeleteShiftResponse
+func (c *ClientWithResponses) DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error) {
+	rsp, err := c.DeleteShift(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteShiftResponse(rsp)
+}
+
+// GetShiftWithResponse request returning *GetShiftResponse
+func (c *ClientWithResponses) GetShiftWithResponse(ctx context.Context, id int, params *GetShiftParams, reqEditors ...RequestEditorFn) (*GetShiftResponse, error) {
+	rsp, err := c.GetShift(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetShiftResponse(rsp)
+}
+
+// UpdateShiftWithBodyWithResponse request with arbitrary body returning *UpdateShiftResponse
+func (c *ClientWithResponses) UpdateShiftWithBodyWithResponse(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error) {
+	rsp, err := c.UpdateShiftWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateShiftResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateShiftWithResponse(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error) {
+	rsp, err := c.UpdateShift(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateShiftResponse(rsp)
+}
+
+// ParseLoginResponse parses an HTTP response from a LoginWithResponse call
+func ParseLoginResponse(rsp *http.Response) (*LoginResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LoginResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Accounts *[]Account `json:"accounts,omitempty"`
+			Login    *Login     `json:"login,omitempty"`
+			Token    *string    `json:"token,omitempty"`
+			Users    *[]User    `json:"users,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseGetShiftsResponse parses an HTTP response from a GetShiftsWithResponse call
@@ -1069,15 +1543,15 @@ func ParseGetShiftsResponse(rsp *http.Response) (*GetShiftsResponse, error) {
 	return response, nil
 }
 
-// ParseLoginResponse parses an HTTP response from a LoginWithResponse call
-func ParseLoginResponse(rsp *http.Response) (*LoginResponse, error) {
+// ParseDeleteShiftResponse parses an HTTP response from a DeleteShiftWithResponse call
+func ParseDeleteShiftResponse(rsp *http.Response) (*DeleteShiftResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &LoginResponse{
+	response := &DeleteShiftResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1085,10 +1559,108 @@ func ParseLoginResponse(rsp *http.Response) (*LoginResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			Accounts *[]Account `json:"accounts,omitempty"`
-			Login    *Login     `json:"login,omitempty"`
-			Token    *string    `json:"token,omitempty"`
-			Users    *[]User    `json:"users,omitempty"`
+			// Deleted The IDs of the shifts that were deleted
+			Deleted *[]int `json:"deleted,omitempty"`
+
+			// Success Whether deletion was successful. If absent, it means nothing was actually deleted.
+			Success *bool `json:"success,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetShiftResponse parses an HTTP response from a GetShiftWithResponse call
+func ParseGetShiftResponse(rsp *http.Response) (*GetShiftResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetShiftResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. If the fetched shift has a shift chain, we will insert all the shifts on that chain from the first up to the date specified in the parameter.
+			RepeatingShifts *[]Shift `json:"repeating_shifts,omitempty"`
+			Shift           *Shift   `json:"shift,omitempty"`
+
+			// Shiftchains Any shift chain this shift is a part of
+			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateShiftResponse parses an HTTP response from a UpdateShiftWithResponse call
+func ParseUpdateShiftResponse(rsp *http.Response) (*UpdateShiftResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateShiftResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Deleted A list of shift IDs that were deleted as a result of the update. Applicable for updates to repeating shifts that impact future shifts on the same chain.
+			Deleted *[]int `json:"deleted,omitempty"`
+
+			// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. We will insert the created or edited shifts from the beginning of the chain up to the date specified in the parameter.
+			RepeatingShifts *[]Shift `json:"repeating_shifts,omitempty"`
+			Shift           *Shift   `json:"shift,omitempty"`
+
+			// Shiftchains Any shift chain this shift is a part of
+			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
