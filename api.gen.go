@@ -273,6 +273,47 @@ type Place struct {
 	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
 }
 
+// Schedule defines model for Schedule.
+type Schedule struct {
+	AccountId      *int       `json:"account_id,omitempty"`
+	Address        *string    `json:"address,omitempty"`
+	Coordinates    *[]float32 `json:"coordinates,omitempty"`
+	CreatedAt      *time.Time `json:"created_at,omitempty"`
+	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
+	Id             *int       `json:"id,omitempty"`
+	IpAddress      *string    `json:"ip_address,omitempty"`
+	IsDefault      *bool      `json:"is_default,omitempty"`
+	IsDeleted      *bool      `json:"is_deleted,omitempty"`
+	Latitude       *float32   `json:"latitude,omitempty"`
+	Longitude      *float32   `json:"longitude,omitempty"`
+	MaxHours       *int       `json:"max_hours,omitempty"`
+	Name           *string    `json:"name,omitempty"`
+	Place          *Place     `json:"place,omitempty"`
+	PlaceConfirmed *bool      `json:"place_confirmed,omitempty"`
+	PlaceId        *string    `json:"place_id,omitempty"`
+	Radius         *int       `json:"radius,omitempty"`
+	Sort           *int       `json:"sort,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+}
+
+// ScheduleRequest defines model for ScheduleRequest.
+type ScheduleRequest struct {
+	AccountId      *int       `json:"account_id,omitempty"`
+	Address        *string    `json:"address,omitempty"`
+	Coordinates    *[]float32 `json:"coordinates,omitempty"`
+	IpAddress      *string    `json:"ip_address,omitempty"`
+	IsDefault      *bool      `json:"is_default,omitempty"`
+	Latitude       *float32   `json:"latitude,omitempty"`
+	Longitude      *float32   `json:"longitude,omitempty"`
+	MaxHours       *int       `json:"max_hours,omitempty"`
+	Name           *string    `json:"name,omitempty"`
+	Place          *Place     `json:"place,omitempty"`
+	PlaceConfirmed *bool      `json:"place_confirmed,omitempty"`
+	PlaceId        *string    `json:"place_id,omitempty"`
+	Radius         *int       `json:"radius,omitempty"`
+	Sort           *int       `json:"sort,omitempty"`
+}
+
 // Shift defines model for Shift.
 type Shift struct {
 	AccountId *int `json:"account_id,omitempty"`
@@ -931,6 +972,18 @@ type UserRequestRole string
 // UserRequestType A bitwise flag representing additional wage options.
 type UserRequestType int
 
+// ListLocationsParams defines parameters for ListLocations.
+type ListLocationsParams struct {
+	// OnlyUnconfirmed Include only unconfirmed schedules/locations
+	OnlyUnconfirmed *bool `form:"only_unconfirmed,omitempty" json:"only_unconfirmed,omitempty"`
+}
+
+// DeleteLocationParams defines parameters for DeleteLocation.
+type DeleteLocationParams struct {
+	// Ids The IDs of the multiple shift templates
+	Ids *string `form:"ids,omitempty" json:"ids,omitempty"`
+}
+
 // LoginJSONBody defines parameters for Login.
 type LoginJSONBody struct {
 	Email    *string `json:"email,omitempty"`
@@ -1148,6 +1201,12 @@ type DeleteUserParams struct {
 	DeletedShifts *bool `form:"deleted_shifts,omitempty" json:"deleted_shifts,omitempty"`
 }
 
+// CreateLocationJSONRequestBody defines body for CreateLocation for application/json ContentType.
+type CreateLocationJSONRequestBody = ScheduleRequest
+
+// UpdateLocationJSONRequestBody defines body for UpdateLocation for application/json ContentType.
+type UpdateLocationJSONRequestBody = ScheduleRequest
+
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody LoginJSONBody
 
@@ -1275,6 +1334,25 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListLocations request
+	ListLocations(ctx context.Context, params *ListLocationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateLocationWithBody request with any body
+	CreateLocationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateLocation(ctx context.Context, body CreateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteLocation request
+	DeleteLocation(ctx context.Context, id int, params *DeleteLocationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetLocation request
+	GetLocation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateLocationWithBody request with any body
+	UpdateLocationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateLocation(ctx context.Context, id int, body UpdateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// LoginWithBody request with any body
 	LoginWithBody(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1415,6 +1493,90 @@ type ClientInterface interface {
 	UpdateUserWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateUser(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) ListLocations(ctx context.Context, params *ListLocationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListLocationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateLocationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateLocationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateLocation(ctx context.Context, body CreateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateLocationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteLocation(ctx context.Context, id int, params *DeleteLocationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteLocationRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetLocation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetLocationRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateLocationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateLocationRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateLocation(ctx context.Context, id int, body UpdateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateLocationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) LoginWithBody(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2051,6 +2213,232 @@ func (c *Client) UpdateUser(ctx context.Context, id int, body UpdateUserJSONRequ
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewListLocationsRequest generates requests for ListLocations
+func NewListLocationsRequest(server string, params *ListLocationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/locations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.OnlyUnconfirmed != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "only_unconfirmed", runtime.ParamLocationQuery, *params.OnlyUnconfirmed); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateLocationRequest calls the generic CreateLocation builder with application/json body
+func NewCreateLocationRequest(server string, body CreateLocationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateLocationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateLocationRequestWithBody generates requests for CreateLocation with any type of body
+func NewCreateLocationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/locations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteLocationRequest generates requests for DeleteLocation
+func NewDeleteLocationRequest(server string, id int, params *DeleteLocationParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/locations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Ids != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ids", runtime.ParamLocationQuery, *params.Ids); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetLocationRequest generates requests for GetLocation
+func NewGetLocationRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/locations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateLocationRequest calls the generic UpdateLocation builder with application/json body
+func NewUpdateLocationRequest(server string, id int, body UpdateLocationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateLocationRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateLocationRequestWithBody generates requests for UpdateLocation with any type of body
+func NewUpdateLocationRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/locations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
 }
 
 // NewLoginRequest calls the generic Login builder with application/json body
@@ -4263,6 +4651,25 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListLocationsWithResponse request
+	ListLocationsWithResponse(ctx context.Context, params *ListLocationsParams, reqEditors ...RequestEditorFn) (*ListLocationsResponse, error)
+
+	// CreateLocationWithBodyWithResponse request with any body
+	CreateLocationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateLocationResponse, error)
+
+	CreateLocationWithResponse(ctx context.Context, body CreateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateLocationResponse, error)
+
+	// DeleteLocationWithResponse request
+	DeleteLocationWithResponse(ctx context.Context, id int, params *DeleteLocationParams, reqEditors ...RequestEditorFn) (*DeleteLocationResponse, error)
+
+	// GetLocationWithResponse request
+	GetLocationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetLocationResponse, error)
+
+	// UpdateLocationWithBodyWithResponse request with any body
+	UpdateLocationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateLocationResponse, error)
+
+	UpdateLocationWithResponse(ctx context.Context, id int, body UpdateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateLocationResponse, error)
+
 	// LoginWithBodyWithResponse request with any body
 	LoginWithBodyWithResponse(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error)
 
@@ -4403,6 +4810,131 @@ type ClientWithResponsesInterface interface {
 	UpdateUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
 	UpdateUserWithResponse(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+}
+
+type ListLocationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Locations *[]Schedule `json:"locations,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListLocationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListLocationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateLocationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Location *Schedule `json:"location,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateLocationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateLocationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteLocationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Success *bool `json:"success,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteLocationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteLocationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetLocationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Location *Schedule `json:"location,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetLocationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetLocationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateLocationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Location *Schedule `json:"location,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateLocationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateLocationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type LoginResponse struct {
@@ -5351,6 +5883,67 @@ func (r UpdateUserResponse) StatusCode() int {
 	return 0
 }
 
+// ListLocationsWithResponse request returning *ListLocationsResponse
+func (c *ClientWithResponses) ListLocationsWithResponse(ctx context.Context, params *ListLocationsParams, reqEditors ...RequestEditorFn) (*ListLocationsResponse, error) {
+	rsp, err := c.ListLocations(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListLocationsResponse(rsp)
+}
+
+// CreateLocationWithBodyWithResponse request with arbitrary body returning *CreateLocationResponse
+func (c *ClientWithResponses) CreateLocationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateLocationResponse, error) {
+	rsp, err := c.CreateLocationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateLocationResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateLocationWithResponse(ctx context.Context, body CreateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateLocationResponse, error) {
+	rsp, err := c.CreateLocation(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateLocationResponse(rsp)
+}
+
+// DeleteLocationWithResponse request returning *DeleteLocationResponse
+func (c *ClientWithResponses) DeleteLocationWithResponse(ctx context.Context, id int, params *DeleteLocationParams, reqEditors ...RequestEditorFn) (*DeleteLocationResponse, error) {
+	rsp, err := c.DeleteLocation(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteLocationResponse(rsp)
+}
+
+// GetLocationWithResponse request returning *GetLocationResponse
+func (c *ClientWithResponses) GetLocationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetLocationResponse, error) {
+	rsp, err := c.GetLocation(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetLocationResponse(rsp)
+}
+
+// UpdateLocationWithBodyWithResponse request with arbitrary body returning *UpdateLocationResponse
+func (c *ClientWithResponses) UpdateLocationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateLocationResponse, error) {
+	rsp, err := c.UpdateLocationWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateLocationResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateLocationWithResponse(ctx context.Context, id int, body UpdateLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateLocationResponse, error) {
+	rsp, err := c.UpdateLocation(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateLocationResponse(rsp)
+}
+
 // LoginWithBodyWithResponse request with arbitrary body returning *LoginResponse
 func (c *ClientWithResponses) LoginWithBodyWithResponse(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error) {
 	rsp, err := c.LoginWithBody(ctx, params, contentType, body, reqEditors...)
@@ -5808,6 +6401,181 @@ func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id int
 		return nil, err
 	}
 	return ParseUpdateUserResponse(rsp)
+}
+
+// ParseListLocationsResponse parses an HTTP response from a ListLocationsWithResponse call
+func ParseListLocationsResponse(rsp *http.Response) (*ListLocationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListLocationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Locations *[]Schedule `json:"locations,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateLocationResponse parses an HTTP response from a CreateLocationWithResponse call
+func ParseCreateLocationResponse(rsp *http.Response) (*CreateLocationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateLocationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Location *Schedule `json:"location,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteLocationResponse parses an HTTP response from a DeleteLocationWithResponse call
+func ParseDeleteLocationResponse(rsp *http.Response) (*DeleteLocationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteLocationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Success *bool `json:"success,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetLocationResponse parses an HTTP response from a GetLocationWithResponse call
+func ParseGetLocationResponse(rsp *http.Response) (*GetLocationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetLocationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Location *Schedule `json:"location,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateLocationResponse parses an HTTP response from a UpdateLocationWithResponse call
+func ParseUpdateLocationResponse(rsp *http.Response) (*UpdateLocationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateLocationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Location *Schedule `json:"location,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseLoginResponse parses an HTTP response from a LoginWithResponse call

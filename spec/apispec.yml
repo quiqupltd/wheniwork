@@ -22,6 +22,8 @@ tags:
     description: List Sites
   - name: Users
     description: List Users
+  - name: Locations
+    description: List Schedules (Locations)
 
 # Ignore this for linting its ok
 .default_response: &default_response
@@ -1512,6 +1514,151 @@ paths:
                       $ref: '#/components/schemas/User'
           default: *default_response
 
+  /2/locations:
+    get:
+      summary: List Schedules (Locations)
+      operationId: ListLocations
+      description: |
+        List all the schedules (locations) in an account.
+      tags:
+        - Locations
+      parameters:
+        - name: only_unconfirmed
+          in: query
+          description: Include only unconfirmed schedules/locations
+          required: false
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Schedule'
+        default: *default_response
+    post:
+      summary: Create Schedule (Location)
+      operationId: CreateLocation
+      description: |
+        Used to create a schedule (location) within an account.
+      tags:
+        - Locations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location:
+                    $ref: '#/components/schemas/Schedule'
+        default: *default_response
+
+  /2/locations/{id}:
+    get:
+      summary: Get Schedule (Location)
+      operationId: GetLocation
+      description: |
+        Get a single schedule/location by ID.
+      tags:
+        - Locations
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the schedule
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location:
+                    $ref: '#/components/schemas/Schedule'
+        default: *default_response
+    put:
+      summary: Update Schedule (Location)
+      operationId: UpdateLocation
+      description: |
+        Updates a single schedule (location).
+      tags:
+        - Locations
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the schedule
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location:
+                    $ref: '#/components/schemas/Schedule'
+        default: *default_response
+    delete:
+      summary: Delete Schedule (Location)
+      operationId: DeleteLocation
+      description: |
+        Delete an existing schedule when no longer needed. This operation cannot be undone. Data will remain for historical purposes.
+      tags:
+        - Locations
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the schedule
+          required: false
+          schema:
+            type: integer
+        - name: ids
+          in: query
+          description: The IDs of the multiple shift templates
+          required: false
+          schema:
+            type: string
+            example: '1,2,3,4'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -2627,3 +2774,121 @@ components:
           type: boolean
           description: True if at least one invite was sent.
           example: true
+
+    Schedule:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 10000
+        account_id:
+          type: integer
+          example: 10000
+        name:
+          type: string
+          example: Front of House
+        address:
+          type: string
+          example: 420 N 5th St #500, Minneapolis, MN 55401, USA
+        coordinates:
+          type: array
+          items:
+            type: number
+          example: [44.983791, -93.2774416]
+        deleted_at:
+          type: string
+          format: date-time
+        ip_address:
+          type: string
+          format: ipv4
+          example: 192.168.1.1
+        is_default:
+          type: boolean
+          example: false
+        is_deleted:
+          type: boolean
+          example: false
+        latitude:
+          type: number
+          format: float
+          example: 44.983791
+        longitude:
+          type: number
+          format: float
+          example: -93.2774416
+        max_hours:
+          type: integer
+          example: 0
+        place:
+          $ref: '#/components/schemas/Place'
+        place_confirmed:
+          type: boolean
+          example: true
+        place_id:
+          type: string
+          example: '2'
+        radius:
+          type: integer
+          example: 100
+        sort:
+          type: integer
+          example: 0
+        created_at:
+          type: string
+          format: date-time
+          example: 2019-05-16T06:57:28+05:00
+        updated_at:
+          type: string
+          format: date-time
+          example: 2019-05-16T06:57:28+05:00
+
+    ScheduleRequest:
+      type: object
+      properties:
+        account_id:
+          type: integer
+          example: 10000
+        name:
+          type: string
+          example: Front of House
+        address:
+          type: string
+          example: 420 N 5th St #500, Minneapolis, MN 55401, USA
+        coordinates:
+          type: array
+          items:
+            type: number
+          example: [44.983791, -93.2774416]
+        ip_address:
+          type: string
+          format: ipv4
+          example: 192.168.1.1
+        is_default:
+          type: boolean
+          example: false
+        latitude:
+          type: number
+          format: float
+          example: 44.983791
+        longitude:
+          type: number
+          format: float
+          example: -93.2774416
+        max_hours:
+          type: integer
+          example: 0
+        place:
+          $ref: '#/components/schemas/Place'
+        place_confirmed:
+          type: boolean
+          example: true
+        place_id:
+          type: string
+          example: '2'
+        radius:
+          type: integer
+          example: 100
+        sort:
+          type: integer
+          example: 0

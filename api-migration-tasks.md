@@ -46,8 +46,8 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 | **/2/users/invite**                       |  [x]   |       |
 | **/2/users/invite/{id}**                  |  [x]   |       |
 | **/2/users/profile**                      |  [x]   |       |
-| **/2/locations**                          |  [ ]   |       |
-| **/2/locations/{id}**                     |  [ ]   |       |
+| **/2/locations**                          |  [x]   |       |
+| **/2/locations/{id}**                     |  [x]   |       |
 | **/2/account**                            |  [ ]   |       |
 | **/2/account/{id}**                       |  [ ]   |       |
 | **/2/account/{id}/admins**                |  [ ]   |       |
