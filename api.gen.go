@@ -1074,6 +1074,12 @@ type ListUsersParams struct {
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
 }
 
+// CreateOrUpdateUserAvatarParams defines parameters for CreateOrUpdateUserAvatar.
+type CreateOrUpdateUserAvatarParams struct {
+	// ContentType The type of content being uploaded
+	ContentType string `json:"content-type"`
+}
+
 // DeleteUserParams defines parameters for DeleteUser.
 type DeleteUserParams struct {
 	// DeletedShifts Indicates whether or not to delete this user's future shifts. If not deleted, those shifts will be moved to Open Shifts.
@@ -1306,6 +1312,9 @@ type ClientInterface interface {
 	CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateUser(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrUpdateUserAvatarWithBody request with any body
+	CreateOrUpdateUserAvatarWithBody(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
 	DeleteUser(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1801,6 +1810,18 @@ func (c *Client) CreateUserWithBody(ctx context.Context, contentType string, bod
 
 func (c *Client) CreateUser(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateUserRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrUpdateUserAvatarWithBody(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrUpdateUserAvatarRequestWithBody(c.Server, id, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3686,6 +3707,55 @@ func NewCreateUserRequestWithBody(server string, contentType string, body io.Rea
 	return req, nil
 }
 
+// NewCreateOrUpdateUserAvatarRequestWithBody generates requests for CreateOrUpdateUserAvatar with any type of body
+func NewCreateOrUpdateUserAvatarRequestWithBody(server string, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/avatar/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "content-type", runtime.ParamLocationHeader, params.ContentType)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("content-type", headerParam0)
+
+	}
+
+	return req, nil
+}
+
 // NewDeleteUserRequest generates requests for DeleteUser
 func NewDeleteUserRequest(server string, id int, params *DeleteUserParams) (*http.Request, error) {
 	var err error
@@ -3974,6 +4044,9 @@ type ClientWithResponsesInterface interface {
 	CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
 
 	CreateUserWithResponse(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
+
+	// CreateOrUpdateUserAvatarWithBodyWithResponse request with any body
+	CreateOrUpdateUserAvatarWithBodyWithResponse(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrUpdateUserAvatarResponse, error)
 
 	// DeleteUserWithResponse request
 	DeleteUserWithResponse(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
@@ -4735,6 +4808,32 @@ func (r CreateUserResponse) StatusCode() int {
 	return 0
 }
 
+type CreateOrUpdateUserAvatarResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		User *User `json:"user,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrUpdateUserAvatarResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrUpdateUserAvatarResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5166,6 +5265,15 @@ func (c *ClientWithResponses) CreateUserWithResponse(ctx context.Context, body C
 		return nil, err
 	}
 	return ParseCreateUserResponse(rsp)
+}
+
+// CreateOrUpdateUserAvatarWithBodyWithResponse request with arbitrary body returning *CreateOrUpdateUserAvatarResponse
+func (c *ClientWithResponses) CreateOrUpdateUserAvatarWithBodyWithResponse(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrUpdateUserAvatarResponse, error) {
+	rsp, err := c.CreateOrUpdateUserAvatarWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrUpdateUserAvatarResponse(rsp)
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
@@ -6303,6 +6411,48 @@ func ParseCreateUserResponse(rsp *http.Response) (*CreateUserResponse, error) {
 	}
 
 	response := &CreateUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			User *User `json:"user,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrUpdateUserAvatarResponse parses an HTTP response from a CreateOrUpdateUserAvatarWithResponse call
+func ParseCreateOrUpdateUserAvatarResponse(rsp *http.Response) (*CreateOrUpdateUserAvatarResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrUpdateUserAvatarResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

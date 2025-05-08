@@ -1312,6 +1312,49 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/users/avatar/{id}:
+    post:
+      summary: Create/Update user avatar
+      operationId: CreateOrUpdateUserAvatar
+      description: |
+        Used to create and update a user's avatar.
+        Multi-line YAML is used for this description as per guidelines.
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user whose avatar is being uploaded
+          required: true
+          schema:
+            type: integer
+        - name: content-type
+          in: header
+          description: The type of content being uploaded
+          required: true
+          schema:
+            type: string
+            example: image/jpeg
+      requestBody:
+        required: true
+        content:
+          image/*:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '404': *not_found_response
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -2337,3 +2380,11 @@ components:
               type: boolean
               description: Whether to reactivate a previously deleted user.
               example: true
+
+    AvatarRequest:
+      description: The avatar image file to upload
+      content:
+        image/*:
+          schema:
+            type: string
+            format: binary
