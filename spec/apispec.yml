@@ -32,7 +32,7 @@ tags:
         $ref: '#/components/schemas/Error'
 
 paths:
-  /login:
+  /2/login:
     post:
       summary: Login
       operationId: Login
