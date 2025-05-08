@@ -17,7 +17,7 @@ Package is in active development
 | /2/sites                              | List or Create Sites                        |    [x]    |
 | /2/sites/{id}                         | Get, Update, or Delete Site                 |    [x]    |
 | /2/shifts/bulk                        | Bulk Update Shifts                          |    [x]    |
-| /2/shifts/eligible                    | List eligible users for OpenShift           |    [ ]    |
+| /2/shifts/eligible                    | List eligible users for OpenShift           |    [x]    |
 | /2/shifts/notify                      | Notify shifts                               |    [ ]    |
 | /2/shifts/notify/{id}                 | Notify single shift                         |    [ ]    |
 | /2/shifts/publish                     | Publish Shifts                              |    [ ]    |

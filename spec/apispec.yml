@@ -741,6 +741,68 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/shifts/eligible:
+    get:
+      summary: List eligible users for OpenShift
+      operationId: GetEligibleUsersForOpenShift
+      description: Get a list of eligible users to offer an OpenShift based on existing shift, or shift parameters
+      tags:
+        - Shifts
+      parameters:
+        - name: id
+          in: query
+          description: The ID of the shift
+          required: false
+          schema:
+            type: integer
+        - name: start
+          in: query
+          description: Start time of the potential shift (required if Shift ID not present)
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: End time of the potential shift (required if Shift ID not present)
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: position_id
+          in: query
+          description: Position ID of the potential shift (required if Shift ID not present)
+          required: false
+          schema:
+            type: string
+        - name: location_id
+          in: query
+          description: Location ID of the potential shift (required if Shift ID not present)
+          required: false
+          schema:
+            type: string
+        - name: is_shared
+          in: query
+          description: Is the shift a shared OpenShift
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: A list of eligible users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '404': *not_found_response
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:

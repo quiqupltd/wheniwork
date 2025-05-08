@@ -30,7 +30,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 | **/2/shifts**                             |  [x]   |       |
 | **/2/shifts/{id}**                        |  [x]   |       |
 | **/2/shifts/bulk**                        |  [x]   |       |
-| **/2/shifts/eligible**                    |  [ ]   |       |
+| **/2/shifts/eligible**                    |  [x]   |       |
 | **/2/shifts/notify**                      |  [ ]   |       |
 | **/2/shifts/notify/{id}**                 |  [ ]   |       |
 | **/2/shifts/publish**                     |  [ ]   |       |
