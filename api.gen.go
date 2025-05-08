@@ -98,6 +98,25 @@ type Login struct {
 	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
 }
 
+// Place defines model for Place.
+type Place struct {
+	Address      *string    `json:"address,omitempty"`
+	BusinessName *string    `json:"business_name,omitempty"`
+	Country      *string    `json:"country,omitempty"`
+	Id           *int       `json:"id,omitempty"`
+	Latitude     *float32   `json:"latitude,omitempty"`
+	Locality     *string    `json:"locality,omitempty"`
+	Longitude    *float32   `json:"longitude,omitempty"`
+	PlaceId      *string    `json:"place_id,omitempty"`
+	PlaceType    *[]string  `json:"place_type,omitempty"`
+	PostalCode   *string    `json:"postal_code,omitempty"`
+	Region       *string    `json:"region,omitempty"`
+	StreetName   *string    `json:"street_name,omitempty"`
+	StreetNumber *string    `json:"street_number,omitempty"`
+	SubLocality  *string    `json:"sub_locality,omitempty"`
+	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
+}
+
 // Shift defines model for Shift.
 type Shift struct {
 	AccountId *int `json:"account_id,omitempty"`
@@ -235,6 +254,41 @@ type ShiftScheduledBreak struct {
 
 	// UpdatedBy The id of the user who last edited the break.
 	UpdatedBy *int `json:"updated_by,omitempty"`
+}
+
+// Site defines model for Site.
+type Site struct {
+	AccountId   *int       `json:"account_id,omitempty"`
+	Address     *string    `json:"address,omitempty"`
+	Color       *string    `json:"color,omitempty"`
+	Coordinates *[]float32 `json:"coordinates,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
+	Description *string    `json:"description,omitempty"`
+	Id          *int       `json:"id,omitempty"`
+	IsDeleted   *bool      `json:"is_deleted,omitempty"`
+	Latitude    *float32   `json:"latitude,omitempty"`
+	LocationId  *int       `json:"location_id,omitempty"`
+	Longitude   *float32   `json:"longitude,omitempty"`
+	Name        *string    `json:"name,omitempty"`
+	Place       *Place     `json:"place,omitempty"`
+	PlaceId     *string    `json:"place_id,omitempty"`
+	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+}
+
+// SiteRequest defines model for SiteRequest.
+type SiteRequest struct {
+	AccountId   *int       `json:"account_id,omitempty"`
+	Address     *string    `json:"address,omitempty"`
+	Color       *string    `json:"color,omitempty"`
+	Coordinates *[]float32 `json:"coordinates,omitempty"`
+	Description *string    `json:"description,omitempty"`
+	Latitude    *float32   `json:"latitude,omitempty"`
+	LocationId  *int       `json:"location_id,omitempty"`
+	Longitude   *float32   `json:"longitude,omitempty"`
+	Name        *string    `json:"name,omitempty"`
+	Place       *Place     `json:"place,omitempty"`
+	PlaceId     *string    `json:"place_id,omitempty"`
 }
 
 // Time defines model for Time.
@@ -541,6 +595,12 @@ type UpdateShiftParams struct {
 // UpdateShiftJSONBody1 defines parameters for UpdateShift.
 type UpdateShiftJSONBody1 = []Shift
 
+// GetSitesParams defines parameters for GetSites.
+type GetSitesParams struct {
+	// IncludeDeleted Include deleted sites
+	IncludeDeleted *bool `form:"include_deleted,omitempty" json:"include_deleted,omitempty"`
+}
+
 // GetTimesParams defines parameters for GetTimes.
 type GetTimesParams struct {
 	// Start The start of the filter range.
@@ -570,6 +630,9 @@ type LoginJSONRequestBody LoginJSONBody
 
 // UpdateShiftJSONRequestBody defines body for UpdateShift for application/json ContentType.
 type UpdateShiftJSONRequestBody UpdateShiftJSONBody
+
+// CreateSiteJSONRequestBody defines body for CreateSite for application/json ContentType.
+type CreateSiteJSONRequestBody = SiteRequest
 
 // CreateTimeJSONRequestBody defines body for CreateTime for application/json ContentType.
 type CreateTimeJSONRequestBody = TimeRequest
@@ -669,6 +732,14 @@ type ClientInterface interface {
 
 	UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetSites request
+	GetSites(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateSiteWithBody request with any body
+	CreateSiteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateSite(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetTimes request
 	GetTimes(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -763,6 +834,42 @@ func (c *Client) UpdateShiftWithBody(ctx context.Context, id int, params *Update
 
 func (c *Client) UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateShiftRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSites(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSitesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSiteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSiteRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSite(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSiteRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1422,6 +1529,95 @@ func NewUpdateShiftRequestWithBody(server string, id int, params *UpdateShiftPar
 	return req, nil
 }
 
+// NewGetSitesRequest generates requests for GetSites
+func NewGetSitesRequest(server string, params *GetSitesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/sites")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.IncludeDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_deleted", runtime.ParamLocationQuery, *params.IncludeDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateSiteRequest calls the generic CreateSite builder with application/json body
+func NewCreateSiteRequest(server string, body CreateSiteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSiteRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateSiteRequestWithBody generates requests for CreateSite with any type of body
+func NewCreateSiteRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/sites")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetTimesRequest generates requests for GetTimes
 func NewGetTimesRequest(server string, params *GetTimesParams) (*http.Request, error) {
 	var err error
@@ -1784,6 +1980,14 @@ type ClientWithResponsesInterface interface {
 
 	UpdateShiftWithResponse(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
 
+	// GetSitesWithResponse request
+	GetSitesWithResponse(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*GetSitesResponse, error)
+
+	// CreateSiteWithBodyWithResponse request with any body
+	CreateSiteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
+
+	CreateSiteWithResponse(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
+
 	// GetTimesWithResponse request
 	GetTimesWithResponse(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*GetTimesResponse, error)
 
@@ -1955,6 +2159,58 @@ func (r UpdateShiftResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateShiftResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSitesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Sites *[]Site `json:"sites,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSitesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSitesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSiteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Site *Site `json:"site,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSiteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSiteResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2151,6 +2407,32 @@ func (c *ClientWithResponses) UpdateShiftWithResponse(ctx context.Context, id in
 		return nil, err
 	}
 	return ParseUpdateShiftResponse(rsp)
+}
+
+// GetSitesWithResponse request returning *GetSitesResponse
+func (c *ClientWithResponses) GetSitesWithResponse(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*GetSitesResponse, error) {
+	rsp, err := c.GetSites(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSitesResponse(rsp)
+}
+
+// CreateSiteWithBodyWithResponse request with arbitrary body returning *CreateSiteResponse
+func (c *ClientWithResponses) CreateSiteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error) {
+	rsp, err := c.CreateSiteWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSiteResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSiteWithResponse(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error) {
+	rsp, err := c.CreateSite(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSiteResponse(rsp)
 }
 
 // GetTimesWithResponse request returning *GetTimesResponse
@@ -2426,6 +2708,90 @@ func ParseUpdateShiftResponse(rsp *http.Response) (*UpdateShiftResponse, error) 
 
 			// Shiftchains Any shift chain this shift is a part of
 			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSitesResponse parses an HTTP response from a GetSitesWithResponse call
+func ParseGetSitesResponse(rsp *http.Response) (*GetSitesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSitesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Sites *[]Site `json:"sites,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSiteResponse parses an HTTP response from a CreateSiteWithResponse call
+func ParseCreateSiteResponse(rsp *http.Response) (*CreateSiteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSiteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Site *Site `json:"site,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
