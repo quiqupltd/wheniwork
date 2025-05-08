@@ -3,10 +3,11 @@
 This document tracks the migration of API routes from `spec/original-spec.json` to `spec/apispec.yml`. During this migration, we do not
 need to look at any other files in the codebase just [original spec](./spec/original-spec.json) and [api spec](./spec/apispec.yml)
 
-## Instructions
+## Agent Instructions
 
 - Each route to be migrated is listed as a task.
 - Check off each task after:
+
   1. Migrating the route to `apispec.yml`. (ensure it is openapi 3.0.0 compliant)
   2. Migrating all referenced schemas (e.g., request/response bodies) to `apispec.yml`.
   3. Make sure the new route has a default response
@@ -16,6 +17,9 @@ need to look at any other files in the codebase just [original spec](./spec/orig
            blah blah
            yadda yadda
      ```
+  5. Run `task generate` to make sure the code generator works as expected (no errors)
+  6. Update the taskfile to mark the task as complete
+
 - Add notes or issues as needed.
 
 ---
@@ -25,7 +29,7 @@ need to look at any other files in the codebase just [original spec](./spec/orig
 - [x] **/2/shifts**: List Shifts (already migrated)
 - [x] **/2/shifts/{id}**: Get, Update, or Delete a single shift by ID
 - [x] **/2/times**: List or Create Times
-- [ ] **/2/times/{id}**: Get, Update, or Delete a single time by ID
+- [x] **/2/times/{id}**: Get, Update, or Delete a single time by ID
 - [ ] **/2/times/clockin**: Clock In
 - [ ] **/2/times/clockout**: Clock Out
 - [ ] **/2/shifts/publish**: Publish Shifts
