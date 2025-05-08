@@ -41,7 +41,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 | **/2/shifts/{id}/swapusers**              |  [x]   |       |
 | **/2/users**                              |  [x]   |       |
 | **/2/users/{id}**                         |  [x]   |       |
-| **/2/users/avatar/{id}**                  |  [ ]   |       |
+| **/2/users/avatar/{id}**                  |  [x]   |       |
 | **/2/users/bulkupdate**                   |  [ ]   |       |
 | **/2/users/invite**                       |  [ ]   |       |
 | **/2/users/invite/{id}**                  |  [ ]   |       |
