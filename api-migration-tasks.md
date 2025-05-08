@@ -1,6 +1,7 @@
 # API Migration Task Tracker
 
-This document tracks the migration of API routes from `spec/original-spec.json` to `spec/apispec.yml`.
+This document tracks the migration of API routes from `spec/original-spec.json` to `spec/apispec.yml`. During this migration, we do not
+need to look at any other files in the codebase just [original spec](./spec/original-spec.json) and [api spec](./spec/apispec.yml)
 
 ## Instructions
 
@@ -17,7 +18,7 @@ This document tracks the migration of API routes from `spec/original-spec.json` 
 ## Migration Tasks
 
 - [x] **/2/shifts**: List Shifts (already migrated)
-- [ ] **/2/shifts/{id}**: Get, Update, or Delete a single shift by ID
+- [x] **/2/shifts/{id}**: Get, Update, or Delete a single shift by ID
 - [ ] **/2/times**: List or Create Times
 - [ ] **/2/times/{id}**: Get, Update, or Delete a single time by ID
 - [ ] **/2/times/clockin**: Clock In

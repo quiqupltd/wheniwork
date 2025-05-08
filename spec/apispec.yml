@@ -17,6 +17,7 @@ tags:
   - name: Shifts
     description: List Shifts
 
+# Ignore this for linting its ok
 .default_response: &default_response
   description: A default response
   content:
@@ -24,6 +25,7 @@ tags:
       schema:
         $ref: '#/components/schemas/Error'
 
+# Ignore this for linting its ok
 .not_found_response: &not_found_response
   description: A not found response
   content:
@@ -141,7 +143,7 @@ paths:
             type: boolean
         - name: include_allopen
           in: query
-          description: Whether or to include open shifts across All Schedules. Requires "Manager or Admin access" level.
+          description: Whether to include open shifts across All Schedules. Requires "Manager or Admin access" level.
           required: false
           schema:
             type: boolean
@@ -232,6 +234,150 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ShiftChain'
+        '404': *not_found_response
+        default: *default_response
+
+  /2/shifts/{id}:
+    get:
+      summary: Get Shift
+      operationId: GetShift
+      description: Get a single shift by ID
+      tags:
+        - Shifts
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the shift
+          required: true
+          schema:
+            type: integer
+        - name: include_repeating_shifts_to
+          in: query
+          description: End date to include repeating shifts in series, if applicable
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shift:
+                    $ref: '#/components/schemas/Shift'
+                  repeating_shifts:
+                    description: This field will be present if the `include_repeating_shifts_to` parameter is provided. If the fetched shift has a shift chain, we will insert all the shifts on that chain from the first up to the date specified in the parameter.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+                  shiftchains:
+                    description: Any shift chain this shift is a part of
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShiftChain'
+        '404': *not_found_response
+        default: *default_response
+    put:
+      summary: Update Shift
+      operationId: UpdateShift
+      description: Update an existing shift for scheduling
+      tags:
+        - Shifts
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the shift
+          required: true
+          schema:
+            type: integer
+        - name: include_repeating_shifts_to
+          in: query
+          description: End date to include repeating shifts in series, if applicable
+          required: false
+          schema:
+            type: string
+            format: date-time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/Shift'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/Shift'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shift:
+                    $ref: '#/components/schemas/Shift'
+                  repeating_shifts:
+                    description: This field will be present if the `include_repeating_shifts_to` parameter is provided. We will insert the created or edited shifts from the beginning of the chain up to the date specified in the parameter.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+                  shiftchains:
+                    description: Any shift chain this shift is a part of
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShiftChain'
+                  deleted:
+                    description: A list of shift IDs that were deleted as a result of the update. Applicable for updates to repeating shifts that impact future shifts on the same chain.
+                    type: array
+                    items:
+                      type: integer
+        '404': *not_found_response
+        default: *default_response
+    delete:
+      summary: Delete Shift
+      operationId: DeleteShift
+      description: Delete an existing shift when no longer needed. This operation cannot be undone.
+      tags:
+        - Shifts
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the shift
+          required: true
+          schema:
+            type: integer
+        - name: message
+          in: query
+          description: Used to notify the shift's assignee that their shift has been deleted. Your message will be added to the notification email. If you want to send the notification email without a message, simply send a single space. Must be URL encoded.
+          required: false
+          schema:
+            type: string
+        - name: chain
+          in: query
+          description: Only applies to repeating shifts. Any value will delete the shift and all shifts that come after it on the chain.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether deletion was successful. If absent, it means nothing was actually deleted.
+                  deleted:
+                    type: array
+                    items:
+                      type: integer
+                    description: The IDs of the shifts that were deleted
         '404': *not_found_response
         default: *default_response
 
