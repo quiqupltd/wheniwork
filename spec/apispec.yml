@@ -1443,6 +1443,75 @@ paths:
                 $ref: '#/components/schemas/InviteUserResponse'
         default: *default_response
 
+  /2/users/profile:
+    get:
+      summary: Get User Profile
+      operationId: GetUserProfile
+      description: |
+        Get the logged in user's profile.
+        Multi-line YAML is used for this description as per guidelines.
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+          default: *default_response
+      post:
+        summary: Update User Profile
+        operationId: UpdateUserProfile
+        description: |
+          Update the logged in user's profile.
+          Although managers and supervisors are able to change most profile information through the Update Existing User endpoint, this is the only way for an employee to change their own information using the API.
+          Multi-line YAML is used for this description as per guidelines.
+        tags:
+          - Users
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  first_name:
+                    type: string
+                    example: John
+                    description: The first name of the user.
+                  last_name:
+                    type: string
+                    example: Doe
+                    description: The last name of the user.
+                  phone_number:
+                    type: string
+                    example: '16511234567'
+                    description: The phone number of the user.
+                  email:
+                    type: string
+                    example: jdoe@wheniwork.com
+                    description: The email address of the user.
+                  is_private:
+                    type: boolean
+                    example: false
+                    description: |
+                      Whether the user has privacy enabled, which will hide their contact details from other employees (excluding supervisors and managers).
+        responses:
+          '200':
+            description: Valid
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    user:
+                      $ref: '#/components/schemas/User'
+          default: *default_response
+
 components:
   securitySchemes:
     W-Token:

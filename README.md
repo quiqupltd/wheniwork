@@ -32,7 +32,7 @@ Package is in active development
 | /2/users/bulkupdate                   | Bulk Update Users                           |     ✓     |
 | /2/users/invite                       | Invite Users                                |           |
 | /2/users/invite/{id}                  | Invite single user                          |           |
-| /2/users/profile                      | Get User Profile                            |           |
+| /2/users/profile                      | Get User Profile                            |     ✓     |
 | /2/locations                          | List or Create Locations (Schedules)        |           |
 | /2/locations/{id}                     | Get or Update Schedule (Location)           |           |
 | /2/account                            | Get Account                                 |           |
