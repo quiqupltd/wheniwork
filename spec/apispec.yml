@@ -477,6 +477,93 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/times/{id}:
+    get:
+      summary: Get Time
+      operationId: GetTime
+      description: |
+        Get a single time by ID
+      tags:
+        - Times
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the time
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  time:
+                    $ref: '#/components/schemas/Time'
+        '404': *not_found_response
+        default: *default_response
+    put:
+      summary: Update Time
+      operationId: UpdateTime
+      description: |
+        Update an existing time
+      tags:
+        - Times
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the time
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  time:
+                    $ref: '#/components/schemas/Time'
+        '404': *not_found_response
+        default: *default_response
+    delete:
+      summary: Delete Time
+      operationId: DeleteTime
+      description: |
+        Delete an existing time when no longer needed. This operation cannot be undone.
+      tags:
+        - Times
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the time
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether deletion was successful.
+        '404': *not_found_response
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:

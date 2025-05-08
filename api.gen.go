@@ -574,6 +574,9 @@ type UpdateShiftJSONRequestBody UpdateShiftJSONBody
 // CreateTimeJSONRequestBody defines body for CreateTime for application/json ContentType.
 type CreateTimeJSONRequestBody = TimeRequest
 
+// UpdateTimeJSONRequestBody defines body for UpdateTime for application/json ContentType.
+type UpdateTimeJSONRequestBody = TimeRequest
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -673,6 +676,17 @@ type ClientInterface interface {
 	CreateTimeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateTime(ctx context.Context, body CreateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTime request
+	DeleteTime(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTime request
+	GetTime(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTimeWithBody request with any body
+	UpdateTimeWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateTime(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) LoginWithBody(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -785,6 +799,54 @@ func (c *Client) CreateTimeWithBody(ctx context.Context, contentType string, bod
 
 func (c *Client) CreateTime(ctx context.Context, body CreateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTimeRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteTime(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTimeRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTime(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTimeRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateTimeWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTimeRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateTime(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTimeRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1545,6 +1607,121 @@ func NewCreateTimeRequestWithBody(server string, contentType string, body io.Rea
 	return req, nil
 }
 
+// NewDeleteTimeRequest generates requests for DeleteTime
+func NewDeleteTimeRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTimeRequest generates requests for GetTime
+func NewGetTimeRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateTimeRequest calls the generic UpdateTime builder with application/json body
+func NewUpdateTimeRequest(server string, id int, body UpdateTimeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateTimeRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateTimeRequestWithBody generates requests for UpdateTime with any type of body
+func NewUpdateTimeRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -1614,6 +1791,17 @@ type ClientWithResponsesInterface interface {
 	CreateTimeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeResponse, error)
 
 	CreateTimeWithResponse(ctx context.Context, body CreateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTimeResponse, error)
+
+	// DeleteTimeWithResponse request
+	DeleteTimeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteTimeResponse, error)
+
+	// GetTimeWithResponse request
+	GetTimeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetTimeResponse, error)
+
+	// UpdateTimeWithBodyWithResponse request with any body
+	UpdateTimeWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTimeResponse, error)
+
+	UpdateTimeWithResponse(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeResponse, error)
 }
 
 type LoginResponse struct {
@@ -1825,6 +2013,85 @@ func (r CreateTimeResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Success Whether deletion was successful.
+		Success *bool `json:"success,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Time *Time `json:"time,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Time *Time `json:"time,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // LoginWithBodyWithResponse request with arbitrary body returning *LoginResponse
 func (c *ClientWithResponses) LoginWithBodyWithResponse(ctx context.Context, params *LoginParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginResponse, error) {
 	rsp, err := c.LoginWithBody(ctx, params, contentType, body, reqEditors...)
@@ -1910,6 +2177,41 @@ func (c *ClientWithResponses) CreateTimeWithResponse(ctx context.Context, body C
 		return nil, err
 	}
 	return ParseCreateTimeResponse(rsp)
+}
+
+// DeleteTimeWithResponse request returning *DeleteTimeResponse
+func (c *ClientWithResponses) DeleteTimeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteTimeResponse, error) {
+	rsp, err := c.DeleteTime(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTimeResponse(rsp)
+}
+
+// GetTimeWithResponse request returning *GetTimeResponse
+func (c *ClientWithResponses) GetTimeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetTimeResponse, error) {
+	rsp, err := c.GetTime(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTimeResponse(rsp)
+}
+
+// UpdateTimeWithBodyWithResponse request with arbitrary body returning *UpdateTimeResponse
+func (c *ClientWithResponses) UpdateTimeWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTimeResponse, error) {
+	rsp, err := c.UpdateTimeWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTimeResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateTimeWithResponse(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeResponse, error) {
+	rsp, err := c.UpdateTime(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTimeResponse(rsp)
 }
 
 // ParseLoginResponse parses an HTTP response from a LoginWithResponse call
@@ -2200,6 +2502,133 @@ func ParseCreateTimeResponse(rsp *http.Response) (*CreateTimeResponse, error) {
 	}
 
 	response := &CreateTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Time *Time `json:"time,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTimeResponse parses an HTTP response from a DeleteTimeWithResponse call
+func ParseDeleteTimeResponse(rsp *http.Response) (*DeleteTimeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Success Whether deletion was successful.
+			Success *bool `json:"success,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTimeResponse parses an HTTP response from a GetTimeWithResponse call
+func ParseGetTimeResponse(rsp *http.Response) (*GetTimeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Time *Time `json:"time,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateTimeResponse parses an HTTP response from a UpdateTimeWithResponse call
+func ParseUpdateTimeResponse(rsp *http.Response) (*UpdateTimeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateTimeResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
