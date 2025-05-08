@@ -15,7 +15,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
   7. Mark the task as complete in this table.
   8. Update the main [readme](README.md) for supported APIs
   9. Commit all filse using -am to make sure to add all changes
-  10. Use github MCP tool to open a new pull request
+  10. Use gh command line tool to open a new pr
 
 - Add notes or issues as needed in the Notes column.
 
