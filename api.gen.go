@@ -1402,6 +1402,9 @@ type ClientInterface interface {
 
 	InviteSingleUser(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetUserProfile request
+	GetUserProfile(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteUser request
 	DeleteUser(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1980,6 +1983,18 @@ func (c *Client) InviteSingleUserWithBody(ctx context.Context, id int, contentTy
 
 func (c *Client) InviteSingleUser(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewInviteSingleUserRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUserProfile(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserProfileRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -4041,6 +4056,33 @@ func NewInviteSingleUserRequestWithBody(server string, id int, contentType strin
 	return req, nil
 }
 
+// NewGetUserProfileRequest generates requests for GetUserProfile
+func NewGetUserProfileRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/profile")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewDeleteUserRequest generates requests for DeleteUser
 func NewDeleteUserRequest(server string, id int, params *DeleteUserParams) (*http.Request, error) {
 	var err error
@@ -4347,6 +4389,9 @@ type ClientWithResponsesInterface interface {
 	InviteSingleUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteSingleUserResponse, error)
 
 	InviteSingleUserWithResponse(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteSingleUserResponse, error)
+
+	// GetUserProfileWithResponse request
+	GetUserProfileWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUserProfileResponse, error)
 
 	// DeleteUserWithResponse request
 	DeleteUserWithResponse(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
@@ -5204,6 +5249,30 @@ func (r InviteSingleUserResponse) StatusCode() int {
 	return 0
 }
 
+type GetUserProfileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		User *User `json:"user,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUserProfileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUserProfileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5695,6 +5764,15 @@ func (c *ClientWithResponses) InviteSingleUserWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseInviteSingleUserResponse(rsp)
+}
+
+// GetUserProfileWithResponse request returning *GetUserProfileResponse
+func (c *ClientWithResponses) GetUserProfileWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUserProfileResponse, error) {
+	rsp, err := c.GetUserProfile(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUserProfileResponse(rsp)
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
@@ -7007,6 +7085,34 @@ func ParseInviteSingleUserResponse(rsp *http.Response) (*InviteSingleUserRespons
 			return nil, err
 		}
 		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUserProfileResponse parses an HTTP response from a GetUserProfileWithResponse call
+func ParseGetUserProfileResponse(rsp *http.Response) (*GetUserProfileResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUserProfileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			User *User `json:"user,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

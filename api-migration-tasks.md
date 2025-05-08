@@ -45,7 +45,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 | **/2/users/bulkupdate**                   |  [x]   |       |
 | **/2/users/invite**                       |  [x]   |       |
 | **/2/users/invite/{id}**                  |  [x]   |       |
-| **/2/users/profile**                      |  [ ]   |       |
+| **/2/users/profile**                      |  [x]   |       |
 | **/2/locations**                          |  [ ]   |       |
 | **/2/locations/{id}**                     |  [ ]   |       |
 | **/2/account**                            |  [ ]   |       |
