@@ -893,8 +893,8 @@ type LoginParams struct {
 	WUserID *string `json:"W-UserID,omitempty"`
 }
 
-// GetShiftsParams defines parameters for GetShifts.
-type GetShiftsParams struct {
+// ListShiftsParams defines parameters for ListShifts.
+type ListShiftsParams struct {
 	// UserId The user id to filter by
 	UserId *int `form:"user_id,omitempty" json:"user_id,omitempty"`
 
@@ -955,8 +955,8 @@ type BulkUpdateShiftsParams struct {
 	AssignOpenshiftInstances *bool `form:"assign_openshift_instances,omitempty" json:"assign_openshift_instances,omitempty"`
 }
 
-// GetEligibleUsersForOpenShiftParams defines parameters for GetEligibleUsersForOpenShift.
-type GetEligibleUsersForOpenShiftParams struct {
+// ListEligibleUsersForOpenShiftParams defines parameters for ListEligibleUsersForOpenShift.
+type ListEligibleUsersForOpenShiftParams struct {
 	// Id The ID of the shift
 	Id *int `form:"id,omitempty" json:"id,omitempty"`
 
@@ -1023,14 +1023,14 @@ type GetSwapUsersParams struct {
 	IdsOnly *int `form:"ids_only,omitempty" json:"ids_only,omitempty"`
 }
 
-// GetSitesParams defines parameters for GetSites.
-type GetSitesParams struct {
+// ListSitesParams defines parameters for ListSites.
+type ListSitesParams struct {
 	// IncludeDeleted Include deleted sites
 	IncludeDeleted *bool `form:"include_deleted,omitempty" json:"include_deleted,omitempty"`
 }
 
-// GetTimesParams defines parameters for GetTimes.
-type GetTimesParams struct {
+// ListTimesParams defines parameters for ListTimes.
+type ListTimesParams struct {
 	// Start The start of the filter range.
 	Start *time.Time `form:"start,omitempty" json:"start,omitempty"`
 
@@ -1053,8 +1053,8 @@ type GetTimesParams struct {
 	IncludePaidBreakNote *bool `form:"include_paid_break_note,omitempty" json:"include_paid_break_note,omitempty"`
 }
 
-// GetUsersParams defines parameters for GetUsers.
-type GetUsersParams struct {
+// ListUsersParams defines parameters for ListUsers.
+type ListUsersParams struct {
 	// LocationId One or more location IDs by which to limit results
 	LocationId *[]int `form:"location_id,omitempty" json:"location_id,omitempty"`
 
@@ -1203,16 +1203,16 @@ type ClientInterface interface {
 
 	Login(ctx context.Context, params *LoginParams, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetShifts request
-	GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListShifts request
+	ListShifts(ctx context.Context, params *ListShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// BulkUpdateShiftsWithBody request with any body
 	BulkUpdateShiftsWithBody(ctx context.Context, params *BulkUpdateShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	BulkUpdateShifts(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetEligibleUsersForOpenShift request
-	GetEligibleUsersForOpenShift(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListEligibleUsersForOpenShift request
+	ListEligibleUsersForOpenShift(ctx context.Context, params *ListEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// NotifyShiftsWithBody request with any body
 	NotifyShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1261,8 +1261,8 @@ type ClientInterface interface {
 	// GetSwapUsers request
 	GetSwapUsers(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetSites request
-	GetSites(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListSites request
+	ListSites(ctx context.Context, params *ListSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSiteWithBody request with any body
 	CreateSiteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1280,8 +1280,8 @@ type ClientInterface interface {
 
 	UpdateSite(ctx context.Context, id int, body UpdateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetTimes request
-	GetTimes(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListTimes request
+	ListTimes(ctx context.Context, params *ListTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateTimeWithBody request with any body
 	CreateTimeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1299,8 +1299,8 @@ type ClientInterface interface {
 
 	UpdateTime(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetUsers request
-	GetUsers(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListUsers request
+	ListUsers(ctx context.Context, params *ListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateUserWithBody request with any body
 	CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1343,8 +1343,8 @@ func (c *Client) Login(ctx context.Context, params *LoginParams, body LoginJSONR
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetShiftsRequest(c.Server, params)
+func (c *Client) ListShifts(ctx context.Context, params *ListShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListShiftsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1379,8 +1379,8 @@ func (c *Client) BulkUpdateShifts(ctx context.Context, params *BulkUpdateShiftsP
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetEligibleUsersForOpenShift(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetEligibleUsersForOpenShiftRequest(c.Server, params)
+func (c *Client) ListEligibleUsersForOpenShift(ctx context.Context, params *ListEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEligibleUsersForOpenShiftRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1607,8 +1607,8 @@ func (c *Client) GetSwapUsers(ctx context.Context, id int, params *GetSwapUsersP
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetSites(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetSitesRequest(c.Server, params)
+func (c *Client) ListSites(ctx context.Context, params *ListSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListSitesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1691,8 +1691,8 @@ func (c *Client) UpdateSite(ctx context.Context, id int, body UpdateSiteJSONRequ
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetTimes(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetTimesRequest(c.Server, params)
+func (c *Client) ListTimes(ctx context.Context, params *ListTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListTimesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1775,8 +1775,8 @@ func (c *Client) UpdateTime(ctx context.Context, id int, body UpdateTimeJSONRequ
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetUsers(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetUsersRequest(c.Server, params)
+func (c *Client) ListUsers(ctx context.Context, params *ListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListUsersRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1923,8 +1923,8 @@ func NewLoginRequestWithBody(server string, params *LoginParams, contentType str
 	return req, nil
 }
 
-// NewGetShiftsRequest generates requests for GetShifts
-func NewGetShiftsRequest(server string, params *GetShiftsParams) (*http.Request, error) {
+// NewListShiftsRequest generates requests for ListShifts
+func NewListShiftsRequest(server string, params *ListShiftsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2289,8 +2289,8 @@ func NewBulkUpdateShiftsRequestWithBody(server string, params *BulkUpdateShiftsP
 	return req, nil
 }
 
-// NewGetEligibleUsersForOpenShiftRequest generates requests for GetEligibleUsersForOpenShift
-func NewGetEligibleUsersForOpenShiftRequest(server string, params *GetEligibleUsersForOpenShiftParams) (*http.Request, error) {
+// NewListEligibleUsersForOpenShiftRequest generates requests for ListEligibleUsersForOpenShift
+func NewListEligibleUsersForOpenShiftRequest(server string, params *ListEligibleUsersForOpenShiftParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3013,8 +3013,8 @@ func NewGetSwapUsersRequest(server string, id int, params *GetSwapUsersParams) (
 	return req, nil
 }
 
-// NewGetSitesRequest generates requests for GetSites
-func NewGetSitesRequest(server string, params *GetSitesParams) (*http.Request, error) {
+// NewListSitesRequest generates requests for ListSites
+func NewListSitesRequest(server string, params *ListSitesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3217,8 +3217,8 @@ func NewUpdateSiteRequestWithBody(server string, id int, contentType string, bod
 	return req, nil
 }
 
-// NewGetTimesRequest generates requests for GetTimes
-func NewGetTimesRequest(server string, params *GetTimesParams) (*http.Request, error) {
+// NewListTimesRequest generates requests for ListTimes
+func NewListTimesRequest(server string, params *ListTimesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3517,8 +3517,8 @@ func NewUpdateTimeRequestWithBody(server string, id int, contentType string, bod
 	return req, nil
 }
 
-// NewGetUsersRequest generates requests for GetUsers
-func NewGetUsersRequest(server string, params *GetUsersParams) (*http.Request, error) {
+// NewListUsersRequest generates requests for ListUsers
+func NewListUsersRequest(server string, params *ListUsersParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3871,16 +3871,16 @@ type ClientWithResponsesInterface interface {
 
 	LoginWithResponse(ctx context.Context, params *LoginParams, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*LoginResponse, error)
 
-	// GetShiftsWithResponse request
-	GetShiftsWithResponse(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*GetShiftsResponse, error)
+	// ListShiftsWithResponse request
+	ListShiftsWithResponse(ctx context.Context, params *ListShiftsParams, reqEditors ...RequestEditorFn) (*ListShiftsResponse, error)
 
 	// BulkUpdateShiftsWithBodyWithResponse request with any body
 	BulkUpdateShiftsWithBodyWithResponse(ctx context.Context, params *BulkUpdateShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkUpdateShiftsResponse, error)
 
 	BulkUpdateShiftsWithResponse(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateShiftsResponse, error)
 
-	// GetEligibleUsersForOpenShiftWithResponse request
-	GetEligibleUsersForOpenShiftWithResponse(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*GetEligibleUsersForOpenShiftResponse, error)
+	// ListEligibleUsersForOpenShiftWithResponse request
+	ListEligibleUsersForOpenShiftWithResponse(ctx context.Context, params *ListEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*ListEligibleUsersForOpenShiftResponse, error)
 
 	// NotifyShiftsWithBodyWithResponse request with any body
 	NotifyShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error)
@@ -3929,8 +3929,8 @@ type ClientWithResponsesInterface interface {
 	// GetSwapUsersWithResponse request
 	GetSwapUsersWithResponse(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*GetSwapUsersResponse, error)
 
-	// GetSitesWithResponse request
-	GetSitesWithResponse(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*GetSitesResponse, error)
+	// ListSitesWithResponse request
+	ListSitesWithResponse(ctx context.Context, params *ListSitesParams, reqEditors ...RequestEditorFn) (*ListSitesResponse, error)
 
 	// CreateSiteWithBodyWithResponse request with any body
 	CreateSiteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
@@ -3948,8 +3948,8 @@ type ClientWithResponsesInterface interface {
 
 	UpdateSiteWithResponse(ctx context.Context, id int, body UpdateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSiteResponse, error)
 
-	// GetTimesWithResponse request
-	GetTimesWithResponse(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*GetTimesResponse, error)
+	// ListTimesWithResponse request
+	ListTimesWithResponse(ctx context.Context, params *ListTimesParams, reqEditors ...RequestEditorFn) (*ListTimesResponse, error)
 
 	// CreateTimeWithBodyWithResponse request with any body
 	CreateTimeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeResponse, error)
@@ -3967,8 +3967,8 @@ type ClientWithResponsesInterface interface {
 
 	UpdateTimeWithResponse(ctx context.Context, id int, body UpdateTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeResponse, error)
 
-	// GetUsersWithResponse request
-	GetUsersWithResponse(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*GetUsersResponse, error)
+	// ListUsersWithResponse request
+	ListUsersWithResponse(ctx context.Context, params *ListUsersParams, reqEditors ...RequestEditorFn) (*ListUsersResponse, error)
 
 	// CreateUserWithBodyWithResponse request with any body
 	CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
@@ -4016,7 +4016,7 @@ func (r LoginResponse) StatusCode() int {
 	return 0
 }
 
-type GetShiftsResponse struct {
+type ListShiftsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -4034,7 +4034,7 @@ type GetShiftsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetShiftsResponse) Status() string {
+func (r ListShiftsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4042,7 +4042,7 @@ func (r GetShiftsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetShiftsResponse) StatusCode() int {
+func (r ListShiftsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4076,7 +4076,7 @@ func (r BulkUpdateShiftsResponse) StatusCode() int {
 	return 0
 }
 
-type GetEligibleUsersForOpenShiftResponse struct {
+type ListEligibleUsersForOpenShiftResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -4087,7 +4087,7 @@ type GetEligibleUsersForOpenShiftResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetEligibleUsersForOpenShiftResponse) Status() string {
+func (r ListEligibleUsersForOpenShiftResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4095,7 +4095,7 @@ func (r GetEligibleUsersForOpenShiftResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetEligibleUsersForOpenShiftResponse) StatusCode() int {
+func (r ListEligibleUsersForOpenShiftResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4421,7 +4421,7 @@ func (r GetSwapUsersResponse) StatusCode() int {
 	return 0
 }
 
-type GetSitesResponse struct {
+type ListSitesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -4432,7 +4432,7 @@ type GetSitesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetSitesResponse) Status() string {
+func (r ListSitesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4440,7 +4440,7 @@ func (r GetSitesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetSitesResponse) StatusCode() int {
+func (r ListSitesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4552,7 +4552,7 @@ func (r UpdateSiteResponse) StatusCode() int {
 	return 0
 }
 
-type GetTimesResponse struct {
+type ListTimesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -4563,7 +4563,7 @@ type GetTimesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetTimesResponse) Status() string {
+func (r ListTimesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4571,7 +4571,7 @@ func (r GetTimesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetTimesResponse) StatusCode() int {
+func (r ListTimesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4683,7 +4683,7 @@ func (r UpdateTimeResponse) StatusCode() int {
 	return 0
 }
 
-type GetUsersResponse struct {
+type ListUsersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -4694,7 +4694,7 @@ type GetUsersResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetUsersResponse) Status() string {
+func (r ListUsersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4702,7 +4702,7 @@ func (r GetUsersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetUsersResponse) StatusCode() int {
+func (r ListUsersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4830,13 +4830,13 @@ func (c *ClientWithResponses) LoginWithResponse(ctx context.Context, params *Log
 	return ParseLoginResponse(rsp)
 }
 
-// GetShiftsWithResponse request returning *GetShiftsResponse
-func (c *ClientWithResponses) GetShiftsWithResponse(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*GetShiftsResponse, error) {
-	rsp, err := c.GetShifts(ctx, params, reqEditors...)
+// ListShiftsWithResponse request returning *ListShiftsResponse
+func (c *ClientWithResponses) ListShiftsWithResponse(ctx context.Context, params *ListShiftsParams, reqEditors ...RequestEditorFn) (*ListShiftsResponse, error) {
+	rsp, err := c.ListShifts(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetShiftsResponse(rsp)
+	return ParseListShiftsResponse(rsp)
 }
 
 // BulkUpdateShiftsWithBodyWithResponse request with arbitrary body returning *BulkUpdateShiftsResponse
@@ -4856,13 +4856,13 @@ func (c *ClientWithResponses) BulkUpdateShiftsWithResponse(ctx context.Context, 
 	return ParseBulkUpdateShiftsResponse(rsp)
 }
 
-// GetEligibleUsersForOpenShiftWithResponse request returning *GetEligibleUsersForOpenShiftResponse
-func (c *ClientWithResponses) GetEligibleUsersForOpenShiftWithResponse(ctx context.Context, params *GetEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*GetEligibleUsersForOpenShiftResponse, error) {
-	rsp, err := c.GetEligibleUsersForOpenShift(ctx, params, reqEditors...)
+// ListEligibleUsersForOpenShiftWithResponse request returning *ListEligibleUsersForOpenShiftResponse
+func (c *ClientWithResponses) ListEligibleUsersForOpenShiftWithResponse(ctx context.Context, params *ListEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*ListEligibleUsersForOpenShiftResponse, error) {
+	rsp, err := c.ListEligibleUsersForOpenShift(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetEligibleUsersForOpenShiftResponse(rsp)
+	return ParseListEligibleUsersForOpenShiftResponse(rsp)
 }
 
 // NotifyShiftsWithBodyWithResponse request with arbitrary body returning *NotifyShiftsResponse
@@ -5020,13 +5020,13 @@ func (c *ClientWithResponses) GetSwapUsersWithResponse(ctx context.Context, id i
 	return ParseGetSwapUsersResponse(rsp)
 }
 
-// GetSitesWithResponse request returning *GetSitesResponse
-func (c *ClientWithResponses) GetSitesWithResponse(ctx context.Context, params *GetSitesParams, reqEditors ...RequestEditorFn) (*GetSitesResponse, error) {
-	rsp, err := c.GetSites(ctx, params, reqEditors...)
+// ListSitesWithResponse request returning *ListSitesResponse
+func (c *ClientWithResponses) ListSitesWithResponse(ctx context.Context, params *ListSitesParams, reqEditors ...RequestEditorFn) (*ListSitesResponse, error) {
+	rsp, err := c.ListSites(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetSitesResponse(rsp)
+	return ParseListSitesResponse(rsp)
 }
 
 // CreateSiteWithBodyWithResponse request with arbitrary body returning *CreateSiteResponse
@@ -5081,13 +5081,13 @@ func (c *ClientWithResponses) UpdateSiteWithResponse(ctx context.Context, id int
 	return ParseUpdateSiteResponse(rsp)
 }
 
-// GetTimesWithResponse request returning *GetTimesResponse
-func (c *ClientWithResponses) GetTimesWithResponse(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*GetTimesResponse, error) {
-	rsp, err := c.GetTimes(ctx, params, reqEditors...)
+// ListTimesWithResponse request returning *ListTimesResponse
+func (c *ClientWithResponses) ListTimesWithResponse(ctx context.Context, params *ListTimesParams, reqEditors ...RequestEditorFn) (*ListTimesResponse, error) {
+	rsp, err := c.ListTimes(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetTimesResponse(rsp)
+	return ParseListTimesResponse(rsp)
 }
 
 // CreateTimeWithBodyWithResponse request with arbitrary body returning *CreateTimeResponse
@@ -5142,13 +5142,13 @@ func (c *ClientWithResponses) UpdateTimeWithResponse(ctx context.Context, id int
 	return ParseUpdateTimeResponse(rsp)
 }
 
-// GetUsersWithResponse request returning *GetUsersResponse
-func (c *ClientWithResponses) GetUsersWithResponse(ctx context.Context, params *GetUsersParams, reqEditors ...RequestEditorFn) (*GetUsersResponse, error) {
-	rsp, err := c.GetUsers(ctx, params, reqEditors...)
+// ListUsersWithResponse request returning *ListUsersResponse
+func (c *ClientWithResponses) ListUsersWithResponse(ctx context.Context, params *ListUsersParams, reqEditors ...RequestEditorFn) (*ListUsersResponse, error) {
+	rsp, err := c.ListUsers(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetUsersResponse(rsp)
+	return ParseListUsersResponse(rsp)
 }
 
 // CreateUserWithBodyWithResponse request with arbitrary body returning *CreateUserResponse
@@ -5248,15 +5248,15 @@ func ParseLoginResponse(rsp *http.Response) (*LoginResponse, error) {
 	return response, nil
 }
 
-// ParseGetShiftsResponse parses an HTTP response from a GetShiftsWithResponse call
-func ParseGetShiftsResponse(rsp *http.Response) (*GetShiftsResponse, error) {
+// ParseListShiftsResponse parses an HTTP response from a ListShiftsWithResponse call
+func ParseListShiftsResponse(rsp *http.Response) (*ListShiftsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetShiftsResponse{
+	response := &ListShiftsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5340,15 +5340,15 @@ func ParseBulkUpdateShiftsResponse(rsp *http.Response) (*BulkUpdateShiftsRespons
 	return response, nil
 }
 
-// ParseGetEligibleUsersForOpenShiftResponse parses an HTTP response from a GetEligibleUsersForOpenShiftWithResponse call
-func ParseGetEligibleUsersForOpenShiftResponse(rsp *http.Response) (*GetEligibleUsersForOpenShiftResponse, error) {
+// ParseListEligibleUsersForOpenShiftResponse parses an HTTP response from a ListEligibleUsersForOpenShiftWithResponse call
+func ParseListEligibleUsersForOpenShiftResponse(rsp *http.Response) (*ListEligibleUsersForOpenShiftResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetEligibleUsersForOpenShiftResponse{
+	response := &ListEligibleUsersForOpenShiftResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5830,15 +5830,15 @@ func ParseGetSwapUsersResponse(rsp *http.Response) (*GetSwapUsersResponse, error
 	return response, nil
 }
 
-// ParseGetSitesResponse parses an HTTP response from a GetSitesWithResponse call
-func ParseGetSitesResponse(rsp *http.Response) (*GetSitesResponse, error) {
+// ParseListSitesResponse parses an HTTP response from a ListSitesWithResponse call
+func ParseListSitesResponse(rsp *http.Response) (*ListSitesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetSitesResponse{
+	response := &ListSitesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6041,15 +6041,15 @@ func ParseUpdateSiteResponse(rsp *http.Response) (*UpdateSiteResponse, error) {
 	return response, nil
 }
 
-// ParseGetTimesResponse parses an HTTP response from a GetTimesWithResponse call
-func ParseGetTimesResponse(rsp *http.Response) (*GetTimesResponse, error) {
+// ParseListTimesResponse parses an HTTP response from a ListTimesWithResponse call
+func ParseListTimesResponse(rsp *http.Response) (*ListTimesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetTimesResponse{
+	response := &ListTimesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6252,15 +6252,15 @@ func ParseUpdateTimeResponse(rsp *http.Response) (*UpdateTimeResponse, error) {
 	return response, nil
 }
 
-// ParseGetUsersResponse parses an HTTP response from a GetUsersWithResponse call
-func ParseGetUsersResponse(rsp *http.Response) (*GetUsersResponse, error) {
+// ParseListUsersResponse parses an HTTP response from a ListUsersWithResponse call
+func ParseListUsersResponse(rsp *http.Response) (*ListUsersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetUsersResponse{
+	response := &ListUsersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

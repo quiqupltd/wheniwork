@@ -99,7 +99,7 @@ paths:
   /2/shifts:
     get:
       summary: List Shifts
-      operationId: GetShifts
+      operationId: ListShifts
       description: Fetch a list of shifts based on a set of filters
       tags:
         - Shifts
@@ -530,7 +530,7 @@ paths:
   /2/sites:
     get:
       summary: List Sites
-      operationId: GetSites
+      operationId: ListSites
       description: List all the sites in an account
       tags:
         - Sites
@@ -667,7 +667,7 @@ paths:
   /2/times:
     get:
       summary: List Times
-      operationId: GetTimes
+      operationId: ListTimes
       description: Fetch a list of times based on a set of filters
       tags:
         - Times
@@ -886,7 +886,7 @@ paths:
   /2/shifts/eligible:
     get:
       summary: List eligible users for OpenShift
-      operationId: GetEligibleUsersForOpenShift
+      operationId: ListEligibleUsersForOpenShift
       description: Get a list of eligible users to offer an OpenShift based on existing shift, or shift parameters
       tags:
         - Shifts
@@ -1131,7 +1131,7 @@ paths:
   /2/users:
     get:
       summary: List Users
-      operationId: GetUsers
+      operationId: ListUsers
       description: List all the users in your account
       tags:
         - Users
