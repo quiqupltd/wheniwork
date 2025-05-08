@@ -19,7 +19,7 @@ Package is in active development
 | /2/shifts/bulk                        | Bulk Update Shifts                          |    [x]    |
 | /2/shifts/eligible                    | List eligible users for OpenShift           |    [x]    |
 | /2/shifts/notify                      | Notify shifts                               |    [x]    |
-| /2/shifts/notify/{id}                 | Notify single shift                         |    [ ]    |
+| /2/shifts/notify/{id}                 | Notify single shift                         |    [x]    |
 | /2/shifts/publish                     | Publish Shifts                              |    [ ]    |
 | /2/shifts/unassign                    | Unassign/Release Shifts                     |    [ ]    |
 | /2/shifts/unpublish                   | Unpublish Shifts                            |    [ ]    |

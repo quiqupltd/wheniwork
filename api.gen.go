@@ -312,6 +312,12 @@ type ShiftScheduledBreak struct {
 	UpdatedBy *int `json:"updated_by,omitempty"`
 }
 
+// SingleShiftNotifyRequest defines model for SingleShiftNotifyRequest.
+type SingleShiftNotifyRequest struct {
+	// Message A custom message to send with the shift notifications.
+	Message *string `json:"message,omitempty"`
+}
+
 // Site defines model for Site.
 type Site struct {
 	AccountId   *int       `json:"account_id,omitempty"`
@@ -717,6 +723,9 @@ type BulkUpdateShiftsJSONRequestBody = BulkEditShiftRequest
 // NotifyShiftsJSONRequestBody defines body for NotifyShifts for application/json ContentType.
 type NotifyShiftsJSONRequestBody = ShiftNotifyRequest
 
+// NotifySingleShiftJSONRequestBody defines body for NotifySingleShift for application/json ContentType.
+type NotifySingleShiftJSONRequestBody = SingleShiftNotifyRequest
+
 // UpdateShiftJSONRequestBody defines body for UpdateShift for application/json ContentType.
 type UpdateShiftJSONRequestBody UpdateShiftJSONBody
 
@@ -825,6 +834,11 @@ type ClientInterface interface {
 	NotifyShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	NotifyShifts(ctx context.Context, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// NotifySingleShiftWithBody request with any body
+	NotifySingleShiftWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	NotifySingleShift(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteShift request
 	DeleteShift(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -962,6 +976,30 @@ func (c *Client) NotifyShiftsWithBody(ctx context.Context, contentType string, b
 
 func (c *Client) NotifyShifts(ctx context.Context, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewNotifyShiftsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) NotifySingleShiftWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifySingleShiftRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) NotifySingleShift(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifySingleShiftRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1787,6 +1825,53 @@ func NewNotifyShiftsRequestWithBody(server string, contentType string, body io.R
 	return req, nil
 }
 
+// NewNotifySingleShiftRequest calls the generic NotifySingleShift builder with application/json body
+func NewNotifySingleShiftRequest(server string, id int, body NotifySingleShiftJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotifySingleShiftRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewNotifySingleShiftRequestWithBody generates requests for NotifySingleShift with any type of body
+func NewNotifySingleShiftRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/notify/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteShiftRequest generates requests for DeleteShift
 func NewDeleteShiftRequest(server string, id int, params *DeleteShiftParams) (*http.Request, error) {
 	var err error
@@ -2552,6 +2637,11 @@ type ClientWithResponsesInterface interface {
 
 	NotifyShiftsWithResponse(ctx context.Context, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error)
 
+	// NotifySingleShiftWithBodyWithResponse request with any body
+	NotifySingleShiftWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error)
+
+	NotifySingleShiftWithResponse(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error)
+
 	// DeleteShiftWithResponse request
 	DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error)
 
@@ -2741,6 +2831,36 @@ func (r NotifyShiftsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r NotifyShiftsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type NotifySingleShiftResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Email A count of the emails sent.
+		Email *int `json:"email,omitempty"`
+
+		// Sms A count of the SMS and/or push notifications (depending on user preferences) sent.
+		Sms     *int  `json:"sms,omitempty"`
+		Success *bool `json:"success,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r NotifySingleShiftResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotifySingleShiftResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3173,6 +3293,23 @@ func (c *ClientWithResponses) NotifyShiftsWithResponse(ctx context.Context, body
 	return ParseNotifyShiftsResponse(rsp)
 }
 
+// NotifySingleShiftWithBodyWithResponse request with arbitrary body returning *NotifySingleShiftResponse
+func (c *ClientWithResponses) NotifySingleShiftWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error) {
+	rsp, err := c.NotifySingleShiftWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotifySingleShiftResponse(rsp)
+}
+
+func (c *ClientWithResponses) NotifySingleShiftWithResponse(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error) {
+	rsp, err := c.NotifySingleShift(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotifySingleShiftResponse(rsp)
+}
+
 // DeleteShiftWithResponse request returning *DeleteShiftResponse
 func (c *ClientWithResponses) DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error) {
 	rsp, err := c.DeleteShift(ctx, id, params, reqEditors...)
@@ -3518,6 +3655,46 @@ func ParseNotifyShiftsResponse(rsp *http.Response) (*NotifyShiftsResponse, error
 	}
 
 	response := &NotifyShiftsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Email A count of the emails sent.
+			Email *int `json:"email,omitempty"`
+
+			// Sms A count of the SMS and/or push notifications (depending on user preferences) sent.
+			Sms     *int  `json:"sms,omitempty"`
+			Success *bool `json:"success,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseNotifySingleShiftResponse parses an HTTP response from a NotifySingleShiftWithResponse call
+func ParseNotifySingleShiftResponse(rsp *http.Response) (*NotifySingleShiftResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotifySingleShiftResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
