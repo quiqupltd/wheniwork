@@ -385,6 +385,67 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/shifts/{id}/swapusers:
+    get:
+      summary: List swap users
+      operationId: GetSwapUsers
+      description: |
+        Fetch a list of eligible users that can take this dropped shift. The ID of the shift can be specified in the path or query string.
+      tags:
+        - Shifts
+        - Swaps
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the shift being dropped
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: query
+          description: The ID of the shift being dropped
+          required: false
+          schema:
+            type: integer
+        - name: count
+          in: query
+          description: Flag to indicate if only a count of eligible takers should be returned
+          required: false
+          schema:
+            type: integer
+            default: false
+        - name: ids_only
+          in: query
+          description: Flag to indicate if only the IDs of the eligible takers should be returned
+          required: false
+          schema:
+            type: integer
+            default: false
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  can_release:
+                    type: boolean
+                    description: Indicates if this shift can be released
+                  users:
+                    oneOf:
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+                      - type: array
+                        items:
+                          type: string
+                  count:
+                    type: integer
+                    description: A count of all the eligible takers
+        '404': *not_found_response
+        default: *default_response
+
   /2/sites:
     get:
       summary: List Sites
