@@ -73,3 +73,15 @@ Package is in active development
 | /2/users/alerts                       | Get User Alerts                                |           |
 
 /2/shifts/{id}/history is now supported in the OpenAPI 3.0.0 spec and available for use.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+## Changelog
+
+All notable changes are documented in [CHANGELOG.md](./CHANGELOG.md). This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Branching Model
+
+We use [Gitflow](https://nvie.com/posts/a-successful-git-branching-model/) for managing releases and tracking changes in the changelog. Please follow the Gitflow workflow for all contributions and releases.
