@@ -485,6 +485,46 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/shifts/{id}/history:
+    get:
+      summary: Fetch shift history
+      operationId: GetShiftHistory
+      description: |
+        Provides a detailed list of history events that are recorded every time the given shift was changed indicating how it changed (Reason Code), and by which user (updated by ID). This history is a rolling 60 day period based on the shift start date/time. Also, history is not retained for OpenShifts following deletion of the shift.
+      tags:
+        - Shifts
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the shift
+          required: true
+          schema:
+            type: integer
+        - name: include_deleted
+          in: query
+          description: Flag to indicate if you want to search for a deleted shift's history (off by default)
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shift:
+                    description: The current version of the shift
+                    $ref: '#/components/schemas/Shift'
+                  history:
+                    description: Array of history events
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShiftHistory'
+        default: *default_response
+
   /2/sites:
     get:
       summary: List Sites
@@ -2005,3 +2045,89 @@ components:
           type: string
           example: Approved for 2 hours on 2023-05-08
           description: Notes about the OpenShift Approval request
+
+    ShiftHistory:
+      type: object
+      properties:
+        type:
+          description: The type of history event
+          type: string
+          enum:
+            - current
+            - created
+            - confirmed
+            - published
+            - unpublished
+            - reassigned
+            - taken
+            - deleted
+            - location_changed
+            - position_changed
+            - position_removed
+            - site_removed
+            - site_changed
+            - break_changed
+            - break_removed
+            - time_changed
+            - accepted
+            - released
+          example: current
+        attributes:
+          type: object
+          required:
+            - actor
+            - at
+          properties:
+            actor:
+              type: string
+              description: The name of the user that triggered this shift history event
+            at:
+              type: string
+              format: date-time
+              example: Fri, 07 Mar 2016 08:30:00 -0600
+              description: The timestamp of when this shift history event was recorded
+            reason:
+              type: string
+              example: edit
+              description: A reason code to provide additional context for why a shift history event was recorded
+              enum:
+                - assign
+                - take
+                - delete
+                - split
+                - swap
+                - drop
+                - edit
+                - assign-approve
+                - repeating-delete
+                - overwrite-conflicts-delete
+                - deleted-assigned-user
+                - user-removed-from-schedule
+                - created-from-repeating-series
+                - updated-from-repeating-series
+                - publish
+                - unpublish
+                - delete-bulk
+                - delete-clear
+            user:
+              type: string
+              description: Present in `current`, `created`, `reassigned`, `taken`, `accepted` and `released` events. The new user assigned to the shift.
+              example: John Doe
+            start:
+              type: string
+              format: date-time
+              description: Present in `current`, `created`, and `time_changed` events. The new start time.
+            end:
+              type: string
+              format: date-time
+              description: Present in `current`, `created`, and `time_changed` events. The new end time.
+            position:
+              type: string
+              description: Present in `current`, `created`, `position_changed` and `position_removed` events. The new position.
+            site:
+              type: string
+              description: Present in `current`, `created`, `site_changed` and `site_removed` events. The new site.
+            break:
+              type: number
+              description: Present in `created`, `current`, `break_changed` and `break_removed` events . The new value of shift break.
+              example: 15

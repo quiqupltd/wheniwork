@@ -22,6 +22,50 @@ const (
 	W_TokenScopes = "W_Token.Scopes"
 )
 
+// Defines values for ShiftHistoryAttributesReason.
+const (
+	Assign                     ShiftHistoryAttributesReason = "assign"
+	AssignApprove              ShiftHistoryAttributesReason = "assign-approve"
+	CreatedFromRepeatingSeries ShiftHistoryAttributesReason = "created-from-repeating-series"
+	Delete                     ShiftHistoryAttributesReason = "delete"
+	DeleteBulk                 ShiftHistoryAttributesReason = "delete-bulk"
+	DeleteClear                ShiftHistoryAttributesReason = "delete-clear"
+	DeletedAssignedUser        ShiftHistoryAttributesReason = "deleted-assigned-user"
+	Drop                       ShiftHistoryAttributesReason = "drop"
+	Edit                       ShiftHistoryAttributesReason = "edit"
+	OverwriteConflictsDelete   ShiftHistoryAttributesReason = "overwrite-conflicts-delete"
+	Publish                    ShiftHistoryAttributesReason = "publish"
+	RepeatingDelete            ShiftHistoryAttributesReason = "repeating-delete"
+	Split                      ShiftHistoryAttributesReason = "split"
+	Swap                       ShiftHistoryAttributesReason = "swap"
+	Take                       ShiftHistoryAttributesReason = "take"
+	Unpublish                  ShiftHistoryAttributesReason = "unpublish"
+	UpdatedFromRepeatingSeries ShiftHistoryAttributesReason = "updated-from-repeating-series"
+	UserRemovedFromSchedule    ShiftHistoryAttributesReason = "user-removed-from-schedule"
+)
+
+// Defines values for ShiftHistoryType.
+const (
+	Accepted        ShiftHistoryType = "accepted"
+	BreakChanged    ShiftHistoryType = "break_changed"
+	BreakRemoved    ShiftHistoryType = "break_removed"
+	Confirmed       ShiftHistoryType = "confirmed"
+	Created         ShiftHistoryType = "created"
+	Current         ShiftHistoryType = "current"
+	Deleted         ShiftHistoryType = "deleted"
+	LocationChanged ShiftHistoryType = "location_changed"
+	PositionChanged ShiftHistoryType = "position_changed"
+	PositionRemoved ShiftHistoryType = "position_removed"
+	Published       ShiftHistoryType = "published"
+	Reassigned      ShiftHistoryType = "reassigned"
+	Released        ShiftHistoryType = "released"
+	SiteChanged     ShiftHistoryType = "site_changed"
+	SiteRemoved     ShiftHistoryType = "site_removed"
+	Taken           ShiftHistoryType = "taken"
+	TimeChanged     ShiftHistoryType = "time_changed"
+	Unpublished     ShiftHistoryType = "unpublished"
+)
+
 // Defines values for UserRole.
 const (
 	N1Admin           UserRole = "1 = Admin"
@@ -276,6 +320,47 @@ type ShiftChain struct {
 	// | Saturday and Sunday       | `0b1100000` | 96      |
 	Weekdays *int `json:"weekdays,omitempty"`
 }
+
+// ShiftHistory defines model for ShiftHistory.
+type ShiftHistory struct {
+	Attributes *struct {
+		// Actor The name of the user that triggered this shift history event
+		Actor string `json:"actor"`
+
+		// At The timestamp of when this shift history event was recorded
+		At time.Time `json:"at"`
+
+		// Break Present in `created`, `current`, `break_changed` and `break_removed` events . The new value of shift break.
+		Break *float32 `json:"break,omitempty"`
+
+		// End Present in `current`, `created`, and `time_changed` events. The new end time.
+		End *time.Time `json:"end,omitempty"`
+
+		// Position Present in `current`, `created`, `position_changed` and `position_removed` events. The new position.
+		Position *string `json:"position,omitempty"`
+
+		// Reason A reason code to provide additional context for why a shift history event was recorded
+		Reason *ShiftHistoryAttributesReason `json:"reason,omitempty"`
+
+		// Site Present in `current`, `created`, `site_changed` and `site_removed` events. The new site.
+		Site *string `json:"site,omitempty"`
+
+		// Start Present in `current`, `created`, and `time_changed` events. The new start time.
+		Start *time.Time `json:"start,omitempty"`
+
+		// User Present in `current`, `created`, `reassigned`, `taken`, `accepted` and `released` events. The new user assigned to the shift.
+		User *string `json:"user,omitempty"`
+	} `json:"attributes,omitempty"`
+
+	// Type The type of history event
+	Type *ShiftHistoryType `json:"type,omitempty"`
+}
+
+// ShiftHistoryAttributesReason A reason code to provide additional context for why a shift history event was recorded
+type ShiftHistoryAttributesReason string
+
+// ShiftHistoryType The type of history event
+type ShiftHistoryType string
 
 // ShiftNotifyRequest defines model for ShiftNotifyRequest.
 type ShiftNotifyRequest struct {
@@ -726,6 +811,12 @@ type UpdateShiftParams struct {
 // UpdateShiftJSONBody1 defines parameters for UpdateShift.
 type UpdateShiftJSONBody1 = []Shift
 
+// GetShiftHistoryParams defines parameters for GetShiftHistory.
+type GetShiftHistoryParams struct {
+	// IncludeDeleted Flag to indicate if you want to search for a deleted shift's history (off by default)
+	IncludeDeleted *bool `form:"include_deleted,omitempty" json:"include_deleted,omitempty"`
+}
+
 // GetSwapUsersParams defines parameters for GetSwapUsers.
 type GetSwapUsersParams struct {
 	// Id The ID of the shift being dropped
@@ -936,6 +1027,9 @@ type ClientInterface interface {
 	UpdateShiftWithBody(ctx context.Context, id int, params *UpdateShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetShiftHistory request
+	GetShiftHistory(ctx context.Context, id int, params *GetShiftHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSwapUsers request
 	GetSwapUsers(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1233,6 +1327,18 @@ func (c *Client) UpdateShiftWithBody(ctx context.Context, id int, params *Update
 
 func (c *Client) UpdateShift(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateShiftRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetShiftHistory(ctx context.Context, id int, params *GetShiftHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShiftHistoryRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2433,6 +2539,62 @@ func NewUpdateShiftRequestWithBody(server string, id int, params *UpdateShiftPar
 	return req, nil
 }
 
+// NewGetShiftHistoryRequest generates requests for GetShiftHistory
+func NewGetShiftHistoryRequest(server string, id int, params *GetShiftHistoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/%s/history", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.IncludeDeleted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_deleted", runtime.ParamLocationQuery, *params.IncludeDeleted); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetSwapUsersRequest generates requests for GetSwapUsers
 func NewGetSwapUsersRequest(server string, id int, params *GetSwapUsersParams) (*http.Request, error) {
 	var err error
@@ -3125,6 +3287,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateShiftWithResponse(ctx context.Context, id int, params *UpdateShiftParams, body UpdateShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateShiftResponse, error)
 
+	// GetShiftHistoryWithResponse request
+	GetShiftHistoryWithResponse(ctx context.Context, id int, params *GetShiftHistoryParams, reqEditors ...RequestEditorFn) (*GetShiftHistoryResponse, error)
+
 	// GetSwapUsersWithResponse request
 	GetSwapUsersWithResponse(ctx context.Context, id int, params *GetSwapUsersParams, reqEditors ...RequestEditorFn) (*GetSwapUsersResponse, error)
 
@@ -3532,6 +3697,33 @@ func (r UpdateShiftResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateShiftResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetShiftHistoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// History Array of history events
+		History *[]ShiftHistory `json:"history,omitempty"`
+		Shift   *Shift          `json:"shift,omitempty"`
+	}
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetShiftHistoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetShiftHistoryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4023,6 +4215,15 @@ func (c *ClientWithResponses) UpdateShiftWithResponse(ctx context.Context, id in
 		return nil, err
 	}
 	return ParseUpdateShiftResponse(rsp)
+}
+
+// GetShiftHistoryWithResponse request returning *GetShiftHistoryResponse
+func (c *ClientWithResponses) GetShiftHistoryWithResponse(ctx context.Context, id int, params *GetShiftHistoryParams, reqEditors ...RequestEditorFn) (*GetShiftHistoryResponse, error) {
+	rsp, err := c.GetShiftHistory(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetShiftHistoryResponse(rsp)
 }
 
 // GetSwapUsersWithResponse request returning *GetSwapUsersResponse
@@ -4686,6 +4887,43 @@ func ParseUpdateShiftResponse(rsp *http.Response) (*UpdateShiftResponse, error) 
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetShiftHistoryResponse parses an HTTP response from a GetShiftHistoryWithResponse call
+func ParseGetShiftHistoryResponse(rsp *http.Response) (*GetShiftHistoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetShiftHistoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// History Array of history events
+			History *[]ShiftHistory `json:"history,omitempty"`
+			Shift   *Shift          `json:"shift,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
