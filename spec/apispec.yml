@@ -1383,6 +1383,66 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/users/invite:
+    post:
+      summary: Invite users
+      operationId: InviteUsers
+      description: |
+        Users can be invited by managers, or by supervisors. This will send them an email or text message inviting them to register.
+        Multi-line YAML is used for this description as per guidelines.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteUserRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteUserResponse'
+        default: *default_response
+
+  /2/users/invite/{id}:
+    post:
+      summary: Invite single user
+      operationId: InviteSingleUser
+      description: |
+        A user can be invited by managers, or by supervisors. This will send them an email or text message inviting them to register.
+        Multi-line YAML is used for this description as per guidelines.
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user to invite
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: An optional message to include in the email invite.
+                  example: Welcome to the company!
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteUserResponse'
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -2455,6 +2515,45 @@ components:
             type: integer
           example: [1, 2, 3]
           description: An array of locations (schedules) assigned to this user.
+        success:
+          type: boolean
+          description: True if at least one invite was sent.
+          example: true
+
+    InviteUserRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+          description: List of existing user IDs to invite.
+        send_all:
+          type: boolean
+          description: Whether to invite all users who do not currently have a login/person. If this is true, the ids parameter will be ignored. Defaults to false.
+          example: false
+        message:
+          type: string
+          description: An optional message to include in the email invite.
+          example: Welcome to the company!
+
+    InviteUserResponse:
+      type: object
+      description: Valid
+      properties:
+        count:
+          type: integer
+          description: The total number of invites sent.
+          example: 3
+        email:
+          type: integer
+          description: The total number of invites sent via email.
+          example: 3
+        sms:
+          type: integer
+          description: The total number of invites sent via text message.
+          example: 1
         success:
           type: boolean
           description: True if at least one invite was sent.

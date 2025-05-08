@@ -187,6 +187,33 @@ type Error struct {
 	Message *string                 `json:"message,omitempty"`
 }
 
+// InviteUserRequest defines model for InviteUserRequest.
+type InviteUserRequest struct {
+	// Ids List of existing user IDs to invite.
+	Ids *[]int `json:"ids,omitempty"`
+
+	// Message An optional message to include in the email invite.
+	Message *string `json:"message,omitempty"`
+
+	// SendAll Whether to invite all users who do not currently have a login/person. If this is true, the ids parameter will be ignored. Defaults to false.
+	SendAll *bool `json:"send_all,omitempty"`
+}
+
+// InviteUserResponse Valid
+type InviteUserResponse struct {
+	// Count The total number of invites sent.
+	Count *int `json:"count,omitempty"`
+
+	// Email The total number of invites sent via email.
+	Email *int `json:"email,omitempty"`
+
+	// Sms The total number of invites sent via text message.
+	Sms *int `json:"sms,omitempty"`
+
+	// Success True if at least one invite was sent.
+	Success *bool `json:"success,omitempty"`
+}
+
 // Login defines model for Login.
 type Login struct {
 	Avatar *struct {
@@ -1109,6 +1136,12 @@ type CreateOrUpdateUserAvatarParams struct {
 // BulkCreateUsersJSONBody defines parameters for BulkCreateUsers.
 type BulkCreateUsersJSONBody = []UserRequest
 
+// InviteSingleUserJSONBody defines parameters for InviteSingleUser.
+type InviteSingleUserJSONBody struct {
+	// Message An optional message to include in the email invite.
+	Message *string `json:"message,omitempty"`
+}
+
 // DeleteUserParams defines parameters for DeleteUser.
 type DeleteUserParams struct {
 	// DeletedShifts Indicates whether or not to delete this user's future shifts. If not deleted, those shifts will be moved to Open Shifts.
@@ -1159,6 +1192,12 @@ type CreateUserJSONRequestBody = UserRequest
 
 // BulkCreateUsersJSONRequestBody defines body for BulkCreateUsers for application/json ContentType.
 type BulkCreateUsersJSONRequestBody = BulkCreateUsersJSONBody
+
+// InviteUsersJSONRequestBody defines body for InviteUsers for application/json ContentType.
+type InviteUsersJSONRequestBody = InviteUserRequest
+
+// InviteSingleUserJSONRequestBody defines body for InviteSingleUser for application/json ContentType.
+type InviteSingleUserJSONRequestBody InviteSingleUserJSONBody
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
@@ -1352,6 +1391,16 @@ type ClientInterface interface {
 	BulkCreateUsersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	BulkCreateUsers(ctx context.Context, body BulkCreateUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// InviteUsersWithBody request with any body
+	InviteUsersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	InviteUsers(ctx context.Context, body InviteUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// InviteSingleUserWithBody request with any body
+	InviteSingleUserWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	InviteSingleUser(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
 	DeleteUser(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1883,6 +1932,54 @@ func (c *Client) BulkCreateUsersWithBody(ctx context.Context, contentType string
 
 func (c *Client) BulkCreateUsers(ctx context.Context, body BulkCreateUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewBulkCreateUsersRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InviteUsersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteUsersRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InviteUsers(ctx context.Context, body InviteUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteUsersRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InviteSingleUserWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteSingleUserRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InviteSingleUser(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteSingleUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3857,6 +3954,93 @@ func NewBulkCreateUsersRequestWithBody(server string, contentType string, body i
 	return req, nil
 }
 
+// NewInviteUsersRequest calls the generic InviteUsers builder with application/json body
+func NewInviteUsersRequest(server string, body InviteUsersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewInviteUsersRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewInviteUsersRequestWithBody generates requests for InviteUsers with any type of body
+func NewInviteUsersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/invite")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewInviteSingleUserRequest calls the generic InviteSingleUser builder with application/json body
+func NewInviteSingleUserRequest(server string, id int, body InviteSingleUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewInviteSingleUserRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewInviteSingleUserRequestWithBody generates requests for InviteSingleUser with any type of body
+func NewInviteSingleUserRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/users/invite/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteUserRequest generates requests for DeleteUser
 func NewDeleteUserRequest(server string, id int, params *DeleteUserParams) (*http.Request, error) {
 	var err error
@@ -4153,6 +4337,16 @@ type ClientWithResponsesInterface interface {
 	BulkCreateUsersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateUsersResponse, error)
 
 	BulkCreateUsersWithResponse(ctx context.Context, body BulkCreateUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateUsersResponse, error)
+
+	// InviteUsersWithBodyWithResponse request with any body
+	InviteUsersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteUsersResponse, error)
+
+	InviteUsersWithResponse(ctx context.Context, body InviteUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteUsersResponse, error)
+
+	// InviteSingleUserWithBodyWithResponse request with any body
+	InviteSingleUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteSingleUserResponse, error)
+
+	InviteSingleUserWithResponse(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteSingleUserResponse, error)
 
 	// DeleteUserWithResponse request
 	DeleteUserWithResponse(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
@@ -4964,6 +5158,52 @@ func (r BulkCreateUsersResponse) StatusCode() int {
 	return 0
 }
 
+type InviteUsersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *InviteUserResponse
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r InviteUsersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r InviteUsersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type InviteSingleUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *InviteUserResponse
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r InviteSingleUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r InviteSingleUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5421,6 +5661,40 @@ func (c *ClientWithResponses) BulkCreateUsersWithResponse(ctx context.Context, b
 		return nil, err
 	}
 	return ParseBulkCreateUsersResponse(rsp)
+}
+
+// InviteUsersWithBodyWithResponse request with arbitrary body returning *InviteUsersResponse
+func (c *ClientWithResponses) InviteUsersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteUsersResponse, error) {
+	rsp, err := c.InviteUsersWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteUsersResponse(rsp)
+}
+
+func (c *ClientWithResponses) InviteUsersWithResponse(ctx context.Context, body InviteUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteUsersResponse, error) {
+	rsp, err := c.InviteUsers(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteUsersResponse(rsp)
+}
+
+// InviteSingleUserWithBodyWithResponse request with arbitrary body returning *InviteSingleUserResponse
+func (c *ClientWithResponses) InviteSingleUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteSingleUserResponse, error) {
+	rsp, err := c.InviteSingleUserWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteSingleUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) InviteSingleUserWithResponse(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteSingleUserResponse, error) {
+	rsp, err := c.InviteSingleUser(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteSingleUserResponse(rsp)
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
@@ -6660,6 +6934,72 @@ func ParseBulkCreateUsersResponse(rsp *http.Response) (*BulkCreateUsersResponse,
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseInviteUsersResponse parses an HTTP response from a InviteUsersWithResponse call
+func ParseInviteUsersResponse(rsp *http.Response) (*InviteUsersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &InviteUsersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InviteUserResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseInviteSingleUserResponse parses an HTTP response from a InviteSingleUserWithResponse call
+func ParseInviteSingleUserResponse(rsp *http.Response) (*InviteSingleUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &InviteSingleUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InviteUserResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
