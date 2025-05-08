@@ -24,6 +24,10 @@ tags:
     description: List Users
   - name: Locations
     description: List Schedules (Locations)
+  - name: Accounts
+    description: |
+      Accounts (aka Workplaces) are objects that define a business account with When I Work. Each user is associated with an account enabling them to access Shifts or other data.
+      For more information about Accounts, visit the [Help Center](https://help.wheniwork.com/article-categories/account-settings/).
 
 # Ignore this for linting its ok
 .default_response: &default_response
@@ -1657,6 +1661,87 @@ paths:
                   success:
                     type: boolean
                     example: true
+        default: *default_response
+
+  /2/account:
+    get:
+      summary: Get Account
+      operationId: GetAccount
+      description: |
+        This endpoint returns the first account associated with the current login token. To get information about a different account, set the W-UserId header to the user id associated with the other account. (See the Authentication section for details.)
+        > If the account being queried for is a parent account, the response provides an object with two members: an `account` object, which specifies the parent account for a given user, and an array, `accounts`, containing all child accounts of the parent account.
+      tags:
+        - Accounts
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account:
+                    $ref: '#/components/schemas/Account'
+        default: *default_response
+    post:
+      summary: Create Account
+      operationId: CreateAccount
+      description: |
+        Used to create an account.
+      tags:
+        - Accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  account:
+                    $ref: '#/components/schemas/Account'
+        default: *default_response
+
+  /2/account/{id}:
+    put:
+      summary: Update Account
+      operationId: UpdateAccount
+      description: |
+        Updates an account.
+      tags:
+        - Accounts
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the account
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account:
+                    $ref: '#/components/schemas/Account'
         default: *default_response
 
 components:
