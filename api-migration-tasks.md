@@ -11,7 +11,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
   4. Use multi-line YAML for any multi-line text fields (see example in this file).
   5. Run `task generate` to verify the code generator works (no errors).
   6. Mark the task as complete in this table.
-  7. Update the main readme for supported APIs
+  7. Update the main [readme](README.md) for supported APIs
 - Add notes or issues as needed in the Notes column.
 
 ---
@@ -20,7 +20,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
 
 | Endpoint                                  | Status | Notes |
 | ----------------------------------------- | :----: | ----- |
-| **/2/sites**                              |  [ ]   |       |
+| **/2/sites**                              |  [x]   |       |
 | **/2/sites/{id}**                         |  [ ]   |       |
 | **/2/shifts**                             |  [x]   |       |
 | **/2/shifts/{id}**                        |  [x]   |       |
