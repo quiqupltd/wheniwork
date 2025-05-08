@@ -1,69 +1,82 @@
 # API Migration Task Tracker
 
-This document tracks the migration of API routes from `spec/original-spec.json` to `spec/apispec.yml`. During this migration, we do not
-need to look at any other files in the codebase just [original spec](./spec/original-spec.json) and [api spec](./spec/apispec.yml)
+This document tracks the migration of all API routes from `spec/original-spec.json` to `spec/apispec.yml`.
 
-## Agent Instructions
+**Instructions:**
 
-- Each route to be migrated is listed as a task.
-- Check off each task after:
-
-  1. Migrating the route to `apispec.yml`. (ensure it is openapi 3.0.0 compliant)
-  2. Migrating all referenced schemas (e.g., request/response bodies) to `apispec.yml`.
-  3. Make sure the new route has a default response
-  4. Any text fields using the format "blah blah\nyadda yadda\ should instead use multi line yaml like:
-     ```
-         description: |
-           blah blah
-           yadda yadda
-     ```
-  5. Run `task generate` to make sure the code generator works as expected (no errors)
-  6. Update the taskfile to mark the task as complete
-
-- Add notes or issues as needed.
+- Each API route is listed below. For each route:
+  1. Migrate the route to `apispec.yml` (ensure OpenAPI 3.0.0 compliance).
+  2. Migrate all referenced schemas (e.g., request/response bodies) to `apispec.yml`.
+  3. Ensure the new route has a default response.
+  4. Use multi-line YAML for any multi-line text fields (see example in this file).
+  5. Run `task generate` to verify the code generator works (no errors).
+  6. Mark the task as complete in this table.
+- Add notes or issues as needed in the Notes column.
 
 ---
 
 ## Migration Tasks
 
-- [x] **/2/shifts**: List Shifts (already migrated)
-- [x] **/2/shifts/{id}**: Get, Update, or Delete a single shift by ID
-- [x] **/2/times**: List or Create Times
-- [x] **/2/times/{id}**: Get, Update, or Delete a single time by ID
-- [ ] **/2/times/clockin**: Clock In
-- [ ] **/2/times/clockout**: Clock Out
-- [ ] **/2/shifts/publish**: Publish Shifts
-- [ ] **/2/shifts/unpublish**: Unpublish Shifts
-- [ ] **/2/blocks**: List or Create Shift Templates (Blocks)
-- [ ] **/2/blocks/{id}**: Get or Update a Shift Template (Block)
-- [ ] **/2/templates/{id}**: Get Schedule Template
-- [ ] **/2/annotations/{id}**: Get or Update Annotation
-- [ ] **/2/requests/{request_id}**: Get, Update, or Delete Time Off Request
-- [ ] **/2/requesttypes**: List Of Time Off Request Types
-- [ ] **/2/requesttypes/{id}**: Get or Delete Time Off Request Type
-- [ ] **/2/swaps/{swap_id}**: Get or Delete a specific shift request
-- [ ] **/2/positions/{id}**: Get, Update, or Delete a Position
-- [ ] **/2/locations/{id}**: Get or Update Schedule (Location)
-- [ ] **/2/sites/{id}**: Get, Update, or Delete Site
-- [ ] **/2/payrolls**: List Payrolls
-- [ ] **/2/payrolls/{id}**: Get Payroll
-- [ ] **/2/users/{id}**: Get User
-- [ ] **/2/users/profile**: Get User Profile
-- [ ] **/2/users/invite/{id}**: Invite single user
-- [ ] **/2/account**: Get Account
-- [ ] **/2/account/settings**: Update Account Settings
-- [ ] **/2/account/{id}/admins**: List Admins
-- [ ] **/2/import**: Create Import
-- [ ] **/2/import/{id}**: Get Import
-- [ ] **/2/import/{id}/preview**: Preview Import
-- [ ] **/2/import/{id}/finalize**: Finalize Import
-- [ ] **/2/timezones**: List Timezones
-- [ ] **/2/timezones/{id}**: Get Timezone
-- [ ] **/v3/scheduled-breaks**: List Scheduled Shift Breaks
-- [ ] **/v3/shift-breaks**: List Shift Breaks
-- [ ] **/v3/shift-breaks/{id}**: Get Shift Break
-- [ ] **/v3/shift-break-audits**: List Shift Break - Paid Rest records (Deprecated)
-- [ ] **/v3/shift-break-audits/{id}**: Get or Delete Shift Break - Paid Rest Record (Deprecated)
-- [ ] **/v3/auto-assign**: List Auto Scheduled shifts
-
-<!-- Add notes or mark tasks as complete as you progress -->
+| Endpoint                                  | Status | Notes |
+| ----------------------------------------- | :----: | ----- |
+| **/2/sites**                              |  [ ]   |       |
+| **/2/sites/{id}**                         |  [ ]   |       |
+| **/2/shifts**                             |  [x]   |       |
+| **/2/shifts/{id}**                        |  [x]   |       |
+| **/2/shifts/bulk**                        |  [ ]   |       |
+| **/2/shifts/eligible**                    |  [ ]   |       |
+| **/2/shifts/notify**                      |  [ ]   |       |
+| **/2/shifts/notify/{id}**                 |  [ ]   |       |
+| **/2/shifts/publish**                     |  [ ]   |       |
+| **/2/shifts/unassign**                    |  [ ]   |       |
+| **/2/shifts/unpublish**                   |  [ ]   |       |
+| **/2/shifts/{id}/assign**                 |  [ ]   |       |
+| **/2/shifts/{id}/history**                |  [ ]   |       |
+| **/2/shifts/{id}/swapusers**              |  [ ]   |       |
+| **/2/users**                              |  [ ]   |       |
+| **/2/users/{id}**                         |  [ ]   |       |
+| **/2/users/avatar/{id}**                  |  [ ]   |       |
+| **/2/users/bulkupdate**                   |  [ ]   |       |
+| **/2/users/invite**                       |  [ ]   |       |
+| **/2/users/invite/{id}**                  |  [ ]   |       |
+| **/2/users/profile**                      |  [ ]   |       |
+| **/2/locations**                          |  [ ]   |       |
+| **/2/locations/{id}**                     |  [ ]   |       |
+| **/2/account**                            |  [ ]   |       |
+| **/2/account/{id}**                       |  [ ]   |       |
+| **/2/account/{id}/admins**                |  [ ]   |       |
+| **/2/account/settings**                   |  [ ]   |       |
+| **/2/annotations**                        |  [ ]   |       |
+| **/2/annotations/{id}**                   |  [ ]   |       |
+| **/2/availabilityevents**                 |  [ ]   |       |
+| **/2/availabilityevents/{id}**            |  [ ]   |       |
+| **/2/availabilityevents/{id}/exceptions** |  [ ]   |       |
+| **/2/blocks**                             |  [ ]   |       |
+| **/2/blocks/{id}**                        |  [ ]   |       |
+| **/2/import**                             |  [ ]   |       |
+| **/2/import/{id}**                        |  [ ]   |       |
+| **/2/import/{id}/finalize**               |  [ ]   |       |
+| **/2/import/{id}/preview**                |  [ ]   |       |
+| **/2/payrolls**                           |  [ ]   |       |
+| **/2/payrolls/{id}**                      |  [ ]   |       |
+| **/2/payrolls/{id}/stats**                |  [ ]   |       |
+| **/2/payrolls/notices**                   |  [ ]   |       |
+| **/2/positions**                          |  [ ]   |       |
+| **/2/positions/{id}**                     |  [ ]   |       |
+| **/2/positions/bulk**                     |  [ ]   |       |
+| **/2/punch/state**                        |  [ ]   |       |
+| **/2/requests**                           |  [ ]   |       |
+| **/2/requests/{request_id}**              |  [ ]   |       |
+| **/2/requesttypes**                       |  [ ]   |       |
+| **/2/requesttypes/{id}**                  |  [ ]   |       |
+| **/2/swaps**                              |  [ ]   |       |
+| **/2/swaps/{swap_id}**                    |  [ ]   |       |
+| **/2/times**                              |  [x]   |       |
+| **/2/times/{id}**                         |  [x]   |       |
+| **/2/times/clockin**                      |  [ ]   |       |
+| **/2/times/clockout**                     |  [ ]   |       |
+| **/2/templates**                          |  [ ]   |       |
+| **/2/templates/{id}**                     |  [ ]   |       |
+| **/2/timezones**                          |  [ ]   |       |
+| **/2/timezones/{id}**                     |  [ ]   |       |
+| **/2/users/alerts**                       |  [ ]   |       |
