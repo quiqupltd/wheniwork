@@ -14,7 +14,7 @@ This document tracks the migration of all API routes from `spec/original-spec.js
   6. Run `task generate` to verify the code generator works (no errors).
   7. Mark the task as complete in this table.
   8. Update the main [readme](README.md) for supported APIs
-  9. Commit all filse using -am to make sure to add all changes
+  9. Commit all filse using -am to make sure to add all changes, then push the changes
   10. Use gh command line tool to open a new pr
 
 - Add notes or issues as needed in the Notes column.
