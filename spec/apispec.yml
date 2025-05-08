@@ -129,12 +129,14 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
         - name: end
           in: query
           description: The end of the filter range.
           required: false
           schema:
             type: string
+            x-go-type: WIWTime
         - name: unpublished
           in: query
           description: Whether or not to include unpublished shifts. Requires supervisor rights.
@@ -203,6 +205,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
         - name: trim_openshifts
           in: query
           description: |
@@ -270,6 +273,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
       responses:
         '200':
           description: Valid
@@ -312,6 +316,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
       requestBody:
         required: true
         content:
@@ -685,6 +690,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
         - name: end
           in: query
           description: The end of the filter range.
@@ -692,6 +698,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
         - name: user_id
           in: query
           description: List of user ids to filter on
@@ -712,6 +719,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
         - name: overwrite_with_rounded
           in: query
           description: Flag to overwrite the start/end/length values with their rounded counterparts (if account setting is enabled)
@@ -910,6 +918,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
         - name: end
           in: query
           description: End time of the potential shift (required if Shift ID not present)
@@ -917,6 +926,7 @@ paths:
           schema:
             type: string
             format: date-time
+            x-go-type: WIWTime
         - name: position_id
           in: query
           description: Position ID of the potential shift (required if Shift ID not present)
@@ -1859,10 +1869,12 @@ components:
         start_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Mon, 08 May 2023 08:30:00 -0600
         end_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Mon, 08 May 2023 14:30:00 -0600
         break_time:
           type: number
@@ -1902,10 +1914,12 @@ components:
         published_date:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Mon, 01 May 2023 08:30:00 -0600
         notified_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Mon, 01 May 2023 08:32:00 -0600
         instances:
           type: integer
@@ -1913,10 +1927,12 @@ components:
         created_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Mon, 24 Apr 2023 07:30:00 -0600
         updated_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Wed, 26 Apr 2023 11:30:00 -0600
         acknowledged:
           type: boolean
@@ -1925,6 +1941,7 @@ components:
         acknowledged_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 21 Apr 2023 13:30:00 -0600
           description: If enabled; When the user confirmed the shift
         creator_id:
@@ -2042,21 +2059,25 @@ components:
         start_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 08:30:00 -0600
           description: The start time
         end_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 14:30:00 -0600
           description: The end time
         rounded_start_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 08:30:00 -0600
           description: The rounded start time. If rounding is not enabled this field will not be present.
         rounded_end_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 14:30:00 -0600
           description: The rounded end time. If rounding is not enabled this field will not be present.
         notes:
@@ -2117,18 +2138,21 @@ components:
           type: string
           readOnly: true
           format: date-time
+          x-go-type: WIWTime
           example: Tue, 17 Mar 2020 14:48:43 -0700
           description: When the time was updated
         created_at:
           type: string
           readOnly: true
           format: date-time
+          x-go-type: WIWTime
           example: Tue, 17 Mar 2020 14:25:48 -0700
           description: When the time was created
         split_time:
           type: string
           readOnly: true
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 00:00:00 -0600
           description: If the time crosses payroll periods, when to split it
         is_alerted:
@@ -2163,21 +2187,25 @@ components:
         start_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 08:30:00 -0600
           description: The start time. For accounts with Check payroll onboarded, time must not be past the end of the current pay period
         end_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 14:30:00 -0600
           description: The end time
         rounded_start_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 08:30:00 -0600
           description: The rounded start time. If rounding is not enabled this field will not be present.
         rounded_end_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Fri, 07 Mar 2016 14:30:00 -0600
           description: The rounded end time. If rounding is not enabled this field will not be present.
         notes:
@@ -2267,6 +2295,7 @@ components:
         last_login:
           description: The date and time when this user last logged in.
           format: date-time
+          x-go-type: WIWTime
           type: string
         last_name:
           description: The last name of this user.
@@ -2324,9 +2353,13 @@ components:
         created_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
         updated_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
         avatar:
           type: object
           properties:
@@ -2386,14 +2419,18 @@ components:
         deleted_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
         created_at:
           type: string
           format: date-time
-          example: 2020-05-16T06:57:28+05:00
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
         updated_at:
           type: string
           format: date-time
-          example: 2020-05-26T06:57:28+05:00
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
 
     Place:
       type: object
@@ -2446,7 +2483,8 @@ components:
         updated_at:
           type: string
           format: date-time
-          example: 2019-05-16T09:14:45+05:45
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
 
     SiteRequest:
       type: object
@@ -2519,10 +2557,12 @@ components:
         start_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Mon, 08 May 2023 08:30:00 -0600
         end_time:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: Mon, 08 May 2023 14:30:00 -0600
         break_time:
           type: number
@@ -2653,6 +2693,7 @@ components:
         approved_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
           example: '2023-05-08T12:00:00'
           description: The date and time when the OpenShift Approval request was approved
         approved_by:
@@ -2702,7 +2743,8 @@ components:
             at:
               type: string
               format: date-time
-              example: Fri, 07 Mar 2016 08:30:00 -0600
+              x-go-type: WIWTime
+              example: Tue, 17 Mar 2020 14:48:43 -0700
               description: The timestamp of when this shift history event was recorded
             reason:
               type: string
@@ -2734,10 +2776,12 @@ components:
             start:
               type: string
               format: date-time
+              x-go-type: WIWTime
               description: Present in `current`, `created`, and `time_changed` events. The new start time.
             end:
               type: string
               format: date-time
+              x-go-type: WIWTime
               description: Present in `current`, `created`, and `time_changed` events. The new end time.
             position:
               type: string
@@ -2884,6 +2928,7 @@ components:
         deleted_at:
           type: string
           format: date-time
+          x-go-type: WIWTime
         ip_address:
           type: string
           format: ipv4
@@ -2922,11 +2967,13 @@ components:
         created_at:
           type: string
           format: date-time
-          example: 2019-05-16T06:57:28+05:00
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
         updated_at:
           type: string
           format: date-time
-          example: 2019-05-16T06:57:28+05:00
+          x-go-type: WIWTime
+          example: Tue, 17 Mar 2020 14:48:43 -0700
 
     ScheduleRequest:
       type: object

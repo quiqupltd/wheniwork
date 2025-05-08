@@ -220,20 +220,20 @@ type Login struct {
 		Size *int    `json:"size,omitempty"`
 		Url  *string `json:"url,omitempty"`
 	} `json:"avatar,omitempty"`
-	CreatedAt *time.Time           `json:"created_at,omitempty"`
+	CreatedAt *WIWTime             `json:"created_at,omitempty"`
 	Email     *openapi_types.Email `json:"email,omitempty"`
 	FirstName *string              `json:"first_name,omitempty"`
 	Id        *int                 `json:"id,omitempty"`
 	LastName  *string              `json:"last_name,omitempty"`
 	Name      *string              `json:"name,omitempty"`
 	Token     *string              `json:"token,omitempty"`
-	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
+	UpdatedAt *WIWTime             `json:"updated_at,omitempty"`
 }
 
 // OpenShiftApprovalRequest defines model for OpenShiftApprovalRequest.
 type OpenShiftApprovalRequest struct {
 	// ApprovedAt The date and time when the OpenShift Approval request was approved
-	ApprovedAt *time.Time `json:"approved_at,omitempty"`
+	ApprovedAt *WIWTime `json:"approved_at,omitempty"`
 
 	// ApprovedBy The ID of the user who approved the OpenShift Approval request
 	ApprovedBy *int `json:"approved_by,omitempty"`
@@ -256,21 +256,21 @@ type OpenShiftApprovalRequest struct {
 
 // Place defines model for Place.
 type Place struct {
-	Address      *string    `json:"address,omitempty"`
-	BusinessName *string    `json:"business_name,omitempty"`
-	Country      *string    `json:"country,omitempty"`
-	Id           *int       `json:"id,omitempty"`
-	Latitude     *float32   `json:"latitude,omitempty"`
-	Locality     *string    `json:"locality,omitempty"`
-	Longitude    *float32   `json:"longitude,omitempty"`
-	PlaceId      *string    `json:"place_id,omitempty"`
-	PlaceType    *[]string  `json:"place_type,omitempty"`
-	PostalCode   *string    `json:"postal_code,omitempty"`
-	Region       *string    `json:"region,omitempty"`
-	StreetName   *string    `json:"street_name,omitempty"`
-	StreetNumber *string    `json:"street_number,omitempty"`
-	SubLocality  *string    `json:"sub_locality,omitempty"`
-	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
+	Address      *string   `json:"address,omitempty"`
+	BusinessName *string   `json:"business_name,omitempty"`
+	Country      *string   `json:"country,omitempty"`
+	Id           *int      `json:"id,omitempty"`
+	Latitude     *float32  `json:"latitude,omitempty"`
+	Locality     *string   `json:"locality,omitempty"`
+	Longitude    *float32  `json:"longitude,omitempty"`
+	PlaceId      *string   `json:"place_id,omitempty"`
+	PlaceType    *[]string `json:"place_type,omitempty"`
+	PostalCode   *string   `json:"postal_code,omitempty"`
+	Region       *string   `json:"region,omitempty"`
+	StreetName   *string   `json:"street_name,omitempty"`
+	StreetNumber *string   `json:"street_number,omitempty"`
+	SubLocality  *string   `json:"sub_locality,omitempty"`
+	UpdatedAt    *WIWTime  `json:"updated_at,omitempty"`
 }
 
 // Schedule defines model for Schedule.
@@ -278,8 +278,8 @@ type Schedule struct {
 	AccountId      *int       `json:"account_id,omitempty"`
 	Address        *string    `json:"address,omitempty"`
 	Coordinates    *[]float32 `json:"coordinates,omitempty"`
-	CreatedAt      *time.Time `json:"created_at,omitempty"`
-	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
+	CreatedAt      *WIWTime   `json:"created_at,omitempty"`
+	DeletedAt      *WIWTime   `json:"deleted_at,omitempty"`
 	Id             *int       `json:"id,omitempty"`
 	IpAddress      *string    `json:"ip_address,omitempty"`
 	IsDefault      *bool      `json:"is_default,omitempty"`
@@ -293,7 +293,7 @@ type Schedule struct {
 	PlaceId        *string    `json:"place_id,omitempty"`
 	Radius         *int       `json:"radius,omitempty"`
 	Sort           *int       `json:"sort,omitempty"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt      *WIWTime   `json:"updated_at,omitempty"`
 }
 
 // ScheduleRequest defines model for ScheduleRequest.
@@ -322,7 +322,7 @@ type Shift struct {
 	Acknowledged *bool `json:"acknowledged,omitempty"`
 
 	// AcknowledgedAt If enabled; When the user confirmed the shift
-	AcknowledgedAt *time.Time `json:"acknowledged_at,omitempty"`
+	AcknowledgedAt *WIWTime `json:"acknowledged_at,omitempty"`
 
 	// Alerted Is the shift Alert sent
 	Alerted *bool `json:"alerted,omitempty"`
@@ -334,14 +334,14 @@ type Shift struct {
 	Breaks *[]ShiftScheduledBreak `json:"breaks,omitempty"`
 
 	// Color Assign color to shift
-	Color     *string    `json:"color,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	Color     *string  `json:"color,omitempty"`
+	CreatedAt *WIWTime `json:"created_at,omitempty"`
 
 	// CreatorId The user that created the shift
-	CreatorId *int      `json:"creator_id,omitempty"`
-	EndTime   time.Time `json:"end_time"`
-	Id        *int      `json:"id,omitempty"`
-	Instances *int      `json:"instances,omitempty"`
+	CreatorId *int    `json:"creator_id,omitempty"`
+	EndTime   WIWTime `json:"end_time"`
+	Id        *int    `json:"id,omitempty"`
+	Instances *int    `json:"instances,omitempty"`
 
 	// IsApprovedWithoutTime Used to indicate that a manager or supervisor has approved a missing time entry for this shift
 	IsApprovedWithoutTime *bool `json:"is_approved_without_time,omitempty"`
@@ -360,25 +360,25 @@ type Shift struct {
 	LocationId int `json:"location_id"`
 
 	// Notes Text notation for a Shift
-	Notes      *string    `json:"notes,omitempty"`
-	NotifiedAt *time.Time `json:"notified_at,omitempty"`
+	Notes      *string  `json:"notes,omitempty"`
+	NotifiedAt *WIWTime `json:"notified_at,omitempty"`
 
 	// OpenshiftApprovalRequestId ID of the associated OpenShift Approval request
 	OpenshiftApprovalRequestId *int `json:"openshift_approval_request_id,omitempty"`
 	PositionId                 *int `json:"position_id,omitempty"`
 
 	// Published Is the shift published
-	Published     *bool      `json:"published,omitempty"`
-	PublishedDate *time.Time `json:"published_date,omitempty"`
+	Published     *bool    `json:"published,omitempty"`
+	PublishedDate *WIWTime `json:"published_date,omitempty"`
 
 	// RequiresOpenshiftApproval Does this shift require OpenShift Approval
 	RequiresOpenshiftApproval *bool `json:"requires_openshift_approval,omitempty"`
 
 	// ShiftchainKey The ID to associate shifts in a repeating pattern
-	ShiftchainKey *string    `json:"shiftchain_key,omitempty"`
-	SiteId        *int       `json:"site_id,omitempty"`
-	StartTime     time.Time  `json:"start_time"`
-	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
+	ShiftchainKey *string  `json:"shiftchain_key,omitempty"`
+	SiteId        *int     `json:"site_id,omitempty"`
+	StartTime     WIWTime  `json:"start_time"`
+	UpdatedAt     *WIWTime `json:"updated_at,omitempty"`
 
 	// UserId The user assigned to the shift. Set to `0` for an Open Shift.
 	UserId *int `json:"user_id,omitempty"`
@@ -396,9 +396,9 @@ type ShiftBulk struct {
 	BreakTime *float32 `json:"break_time,omitempty"`
 
 	// Color Assign color to shift
-	Color   *string   `json:"color,omitempty"`
-	EndTime time.Time `json:"end_time"`
-	Id      int       `json:"id"`
+	Color   *string `json:"color,omitempty"`
+	EndTime WIWTime `json:"end_time"`
+	Id      int     `json:"id"`
 
 	// LinkedUsers Array of user IDs that can take this openshift. Null means all users are eligible.
 	LinkedUsers *[]int `json:"linked_users,omitempty"`
@@ -407,10 +407,10 @@ type ShiftBulk struct {
 	LocationId int `json:"location_id"`
 
 	// Notes Text notation for a Shift
-	Notes      *string   `json:"notes,omitempty"`
-	PositionId *int      `json:"position_id,omitempty"`
-	SiteId     *int      `json:"site_id,omitempty"`
-	StartTime  time.Time `json:"start_time"`
+	Notes      *string `json:"notes,omitempty"`
+	PositionId *int    `json:"position_id,omitempty"`
+	SiteId     *int    `json:"site_id,omitempty"`
+	StartTime  WIWTime `json:"start_time"`
 
 	// UserId The user assigned to the shift. Set to `0` for an Open Shift.
 	UserId *int `json:"user_id,omitempty"`
@@ -454,13 +454,13 @@ type ShiftHistory struct {
 		Actor string `json:"actor"`
 
 		// At The timestamp of when this shift history event was recorded
-		At time.Time `json:"at"`
+		At WIWTime `json:"at"`
 
 		// Break Present in `created`, `current`, `break_changed` and `break_removed` events . The new value of shift break.
 		Break *float32 `json:"break,omitempty"`
 
 		// End Present in `current`, `created`, and `time_changed` events. The new end time.
-		End *time.Time `json:"end,omitempty"`
+		End *WIWTime `json:"end,omitempty"`
 
 		// Position Present in `current`, `created`, `position_changed` and `position_removed` events. The new position.
 		Position *string `json:"position,omitempty"`
@@ -472,7 +472,7 @@ type ShiftHistory struct {
 		Site *string `json:"site,omitempty"`
 
 		// Start Present in `current`, `created`, and `time_changed` events. The new start time.
-		Start *time.Time `json:"start,omitempty"`
+		Start *WIWTime `json:"start,omitempty"`
 
 		// User Present in `current`, `created`, `reassigned`, `taken`, `accepted` and `released` events. The new user assigned to the shift.
 		User *string `json:"user,omitempty"`
@@ -577,8 +577,8 @@ type Site struct {
 	Address     *string    `json:"address,omitempty"`
 	Color       *string    `json:"color,omitempty"`
 	Coordinates *[]float32 `json:"coordinates,omitempty"`
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
+	CreatedAt   *WIWTime   `json:"created_at,omitempty"`
+	DeletedAt   *WIWTime   `json:"deleted_at,omitempty"`
 	Description *string    `json:"description,omitempty"`
 	Id          *int       `json:"id,omitempty"`
 	IsDeleted   *bool      `json:"is_deleted,omitempty"`
@@ -588,7 +588,7 @@ type Site struct {
 	Name        *string    `json:"name,omitempty"`
 	Place       *Place     `json:"place,omitempty"`
 	PlaceId     *string    `json:"place_id,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt   *WIWTime   `json:"updated_at,omitempty"`
 }
 
 // SiteRequest defines model for SiteRequest.
@@ -619,13 +619,13 @@ type Time struct {
 	CashTips *string `json:"cash_tips"`
 
 	// CreatedAt When the time was created
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt *WIWTime `json:"created_at,omitempty"`
 
 	// CreatorId The user that created the time.
 	CreatorId *int `json:"creator_id,omitempty"`
 
 	// EndTime The end time
-	EndTime *time.Time `json:"end_time,omitempty"`
+	EndTime *WIWTime `json:"end_time,omitempty"`
 
 	// HourlyRate The base hourly rate for this time.
 	HourlyRate *float32 `json:"hourly_rate,omitempty"`
@@ -655,13 +655,13 @@ type Time struct {
 	PositionId *int `json:"position_id,omitempty"`
 
 	// RoundedEndTime The rounded end time. If rounding is not enabled this field will not be present.
-	RoundedEndTime *time.Time `json:"rounded_end_time,omitempty"`
+	RoundedEndTime *WIWTime `json:"rounded_end_time,omitempty"`
 
 	// RoundedLength The rounded length calculated from the rounded_start_time and rounded_end_time. If rounding is not enabled this field will not be present.
 	RoundedLength *float32 `json:"rounded_length,omitempty"`
 
 	// RoundedStartTime The rounded start time. If rounding is not enabled this field will not be present.
-	RoundedStartTime *time.Time `json:"rounded_start_time,omitempty"`
+	RoundedStartTime *WIWTime `json:"rounded_start_time,omitempty"`
 
 	// ShiftId A shift tied to this time. 0 if unassigned.
 	ShiftId *int `json:"shift_id,omitempty"`
@@ -670,10 +670,10 @@ type Time struct {
 	SiteId *int `json:"site_id,omitempty"`
 
 	// SplitTime If the time crosses payroll periods, when to split it
-	SplitTime *time.Time `json:"split_time,omitempty"`
+	SplitTime *WIWTime `json:"split_time,omitempty"`
 
 	// StartTime The start time
-	StartTime *time.Time `json:"start_time,omitempty"`
+	StartTime *WIWTime `json:"start_time,omitempty"`
 
 	// SyncHash The quickbooks sync hash
 	SyncHash *string `json:"sync_hash,omitempty"`
@@ -682,7 +682,7 @@ type Time struct {
 	SyncId *string `json:"sync_id,omitempty"`
 
 	// UpdatedAt When the time was updated
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt *WIWTime `json:"updated_at,omitempty"`
 
 	// UserId The user assigned to the time.
 	UserId *int `json:"user_id,omitempty"`
@@ -694,7 +694,7 @@ type TimeRequest struct {
 	CashTips *string `json:"cash_tips,omitempty"`
 
 	// EndTime The end time
-	EndTime *time.Time `json:"end_time,omitempty"`
+	EndTime *WIWTime `json:"end_time,omitempty"`
 
 	// IsApproved If the time is approved
 	IsApproved *bool `json:"is_approved,omitempty"`
@@ -709,10 +709,10 @@ type TimeRequest struct {
 	PositionId *int `json:"position_id,omitempty"`
 
 	// RoundedEndTime The rounded end time. If rounding is not enabled this field will not be present.
-	RoundedEndTime *time.Time `json:"rounded_end_time,omitempty"`
+	RoundedEndTime *WIWTime `json:"rounded_end_time,omitempty"`
 
 	// RoundedStartTime The rounded start time. If rounding is not enabled this field will not be present.
-	RoundedStartTime *time.Time `json:"rounded_start_time,omitempty"`
+	RoundedStartTime *WIWTime `json:"rounded_start_time,omitempty"`
 
 	// ShiftId A shift tied to this time. 0 if unassigned.
 	ShiftId *int `json:"shift_id,omitempty"`
@@ -721,7 +721,7 @@ type TimeRequest struct {
 	SiteId *int `json:"site_id,omitempty"`
 
 	// StartTime The start time. For accounts with Check payroll onboarded, time must not be past the end of the current pay period
-	StartTime *time.Time `json:"start_time,omitempty"`
+	StartTime *WIWTime `json:"start_time,omitempty"`
 
 	// UserId The user assigned to the times.
 	UserId *int `json:"user_id,omitempty"`
@@ -777,7 +777,7 @@ type UpdateUserRequest struct {
 	IsTrusted *bool `json:"is_trusted,omitempty"`
 
 	// LastLogin The date and time when this user last logged in.
-	LastLogin *time.Time `json:"last_login,omitempty"`
+	LastLogin *WIWTime `json:"last_login,omitempty"`
 
 	// LastName The last name of this user.
 	LastName *string `json:"last_name,omitempty"`
@@ -858,7 +858,7 @@ type User struct {
 	IsTrusted *bool `json:"is_trusted,omitempty"`
 
 	// LastLogin The date and time when this user last logged in.
-	LastLogin *time.Time `json:"last_login,omitempty"`
+	LastLogin *WIWTime `json:"last_login,omitempty"`
 
 	// LastName The last name of this user.
 	LastName *string `json:"last_name,omitempty"`
@@ -939,7 +939,7 @@ type UserRequest struct {
 	IsTrusted *bool `json:"is_trusted,omitempty"`
 
 	// LastLogin The date and time when this user last logged in.
-	LastLogin *time.Time `json:"last_login,omitempty"`
+	LastLogin *WIWTime `json:"last_login,omitempty"`
 
 	// LastName The last name of this user.
 	LastName *string `json:"last_name,omitempty"`
@@ -1005,10 +1005,10 @@ type ListShiftsParams struct {
 	UserId *int `form:"user_id,omitempty" json:"user_id,omitempty"`
 
 	// Start The start of the filter range.
-	Start *time.Time `form:"start,omitempty" json:"start,omitempty"`
+	Start *WIWTime `form:"start,omitempty" json:"start,omitempty"`
 
 	// End The end of the filter range.
-	End *string `form:"end,omitempty" json:"end,omitempty"`
+	End *WIWTime `form:"end,omitempty" json:"end,omitempty"`
 
 	// Unpublished Whether or not to include unpublished shifts. Requires supervisor rights.
 	Unpublished *bool `form:"unpublished,omitempty" json:"unpublished,omitempty"`
@@ -1041,7 +1041,7 @@ type ListShiftsParams struct {
 	ShiftSort *bool `form:"shift_sort,omitempty" json:"shift_sort,omitempty"`
 
 	// IncludeRepeatingShiftsTo End date to include repeating shifts in series, if applicable
-	IncludeRepeatingShiftsTo *time.Time `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
+	IncludeRepeatingShiftsTo *WIWTime `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
 
 	// TrimOpenshifts Setting to true will work w/ the Allow Partial Openshifts feature to display trimmed start/end times for
 	// users that can take a conflicting openshift based on the account settings.
@@ -1067,10 +1067,10 @@ type ListEligibleUsersForOpenShiftParams struct {
 	Id *int `form:"id,omitempty" json:"id,omitempty"`
 
 	// Start Start time of the potential shift (required if Shift ID not present)
-	Start *time.Time `form:"start,omitempty" json:"start,omitempty"`
+	Start *WIWTime `form:"start,omitempty" json:"start,omitempty"`
 
 	// End End time of the potential shift (required if Shift ID not present)
-	End *time.Time `form:"end,omitempty" json:"end,omitempty"`
+	End *WIWTime `form:"end,omitempty" json:"end,omitempty"`
 
 	// PositionId Position ID of the potential shift (required if Shift ID not present)
 	PositionId *string `form:"position_id,omitempty" json:"position_id,omitempty"`
@@ -1094,7 +1094,7 @@ type DeleteShiftParams struct {
 // GetShiftParams defines parameters for GetShift.
 type GetShiftParams struct {
 	// IncludeRepeatingShiftsTo End date to include repeating shifts in series, if applicable
-	IncludeRepeatingShiftsTo *time.Time `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
+	IncludeRepeatingShiftsTo *WIWTime `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
 }
 
 // UpdateShiftJSONBody defines parameters for UpdateShift.
@@ -1105,7 +1105,7 @@ type UpdateShiftJSONBody struct {
 // UpdateShiftParams defines parameters for UpdateShift.
 type UpdateShiftParams struct {
 	// IncludeRepeatingShiftsTo End date to include repeating shifts in series, if applicable
-	IncludeRepeatingShiftsTo *time.Time `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
+	IncludeRepeatingShiftsTo *WIWTime `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
 }
 
 // UpdateShiftJSONBody1 defines parameters for UpdateShift.
@@ -1138,10 +1138,10 @@ type ListSitesParams struct {
 // ListTimesParams defines parameters for ListTimes.
 type ListTimesParams struct {
 	// Start The start of the filter range.
-	Start *time.Time `form:"start,omitempty" json:"start,omitempty"`
+	Start *WIWTime `form:"start,omitempty" json:"start,omitempty"`
 
 	// End The end of the filter range.
-	End *time.Time `form:"end,omitempty" json:"end,omitempty"`
+	End *WIWTime `form:"end,omitempty" json:"end,omitempty"`
 
 	// UserId List of user ids to filter on
 	UserId *string `form:"user_id,omitempty" json:"user_id,omitempty"`
@@ -1150,7 +1150,7 @@ type ListTimesParams struct {
 	OnlyOpen *bool `form:"only_open,omitempty" json:"only_open,omitempty"`
 
 	// UpdatedAt Only return times that have been updated since the provided timestamp.
-	UpdatedAt *time.Time `form:"updated_at,omitempty" json:"updated_at,omitempty"`
+	UpdatedAt *WIWTime `form:"updated_at,omitempty" json:"updated_at,omitempty"`
 
 	// OverwriteWithRounded Flag to overwrite the start/end/length values with their rounded counterparts (if account setting is enabled)
 	OverwriteWithRounded *int `form:"overwrite_with_rounded,omitempty" json:"overwrite_with_rounded,omitempty"`
