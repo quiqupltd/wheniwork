@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/quiqupltd/wheniwork.svg)](https://pkg.go.dev/github.com/quiqupltd/wheniwork)
 
-The Quiqup WhenIWork API client is a golang client implemented using resty, it supports only a subset of the overall spec provided by wheniwork as their spec is broken, it uses an approach where openapi spec is still at the core primarily to be able to adopt the full spec if the main open api spec can be cleaned and fixed.
+The Quiqup WhenIWork API client is a golang client implemented using oapi-codegen, it supports only a subset of the overall spec provided by wheniwork as their spec is broken, it uses an approach where openapi spec is still at the core primarily to be able to adopt the full spec if the main open api spec can be cleaned and fixed.
 
 ## In Development
 
