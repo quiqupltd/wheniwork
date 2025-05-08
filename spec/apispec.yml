@@ -892,6 +892,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /2/shifts/publish:
+    post:
+      summary: Publish Shifts
+      operationId: PublishShifts
+      description: |
+        These methods allow you to publish a group of shifts.
+        (Note: multi-threading is supported for large lists of shifts)
+        See Notify Shifts for informing users of Publication.
+      tags:
+        - Shifts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftPublish'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shifts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+        default:
+          description: Default error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     W-Token:
@@ -1748,3 +1783,13 @@ components:
           type: string
           example: hello world
           description: A custom message to send with the shift notifications.
+
+    ShiftPublish:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+          example: [878787, 656565]
+          description: List of shift IDs
