@@ -74,6 +74,9 @@ type BaseScheduledBreak struct {
 	UpdatedBy *int `json:"updated_by,omitempty"`
 }
 
+// BulkEditShiftRequest Array of shift objects to update
+type BulkEditShiftRequest = []ShiftBulk
+
 // Error defines model for Error.
 type Error struct {
 	Code    *string                 `json:"code,omitempty"`
@@ -182,6 +185,32 @@ type Shift struct {
 	SiteId        *int       `json:"site_id,omitempty"`
 	StartTime     time.Time  `json:"start_time"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
+
+	// UserId The user assigned to the shift. Set to `0` for an Open Shift.
+	UserId *int `json:"user_id,omitempty"`
+}
+
+// ShiftBulk defines model for ShiftBulk.
+type ShiftBulk struct {
+	AccountId *int     `json:"account_id,omitempty"`
+	BreakTime *float32 `json:"break_time,omitempty"`
+
+	// Color Assign color to shift
+	Color   *string   `json:"color,omitempty"`
+	EndTime time.Time `json:"end_time"`
+	Id      int       `json:"id"`
+
+	// LinkedUsers Array of user IDs that can take this openshift. Null means all users are eligible.
+	LinkedUsers *[]int `json:"linked_users,omitempty"`
+
+	// LocationId Location the shift belongs to
+	LocationId int `json:"location_id"`
+
+	// Notes Text notation for a Shift
+	Notes      *string   `json:"notes,omitempty"`
+	PositionId *int      `json:"position_id,omitempty"`
+	SiteId     *int      `json:"site_id,omitempty"`
+	StartTime  time.Time `json:"start_time"`
 
 	// UserId The user assigned to the shift. Set to `0` for an Open Shift.
 	UserId *int `json:"user_id,omitempty"`
@@ -566,6 +595,12 @@ type GetShiftsParams struct {
 	WUserID *string `json:"W-UserID,omitempty"`
 }
 
+// BulkUpdateShiftsParams defines parameters for BulkUpdateShifts.
+type BulkUpdateShiftsParams struct {
+	// AssignOpenshiftInstances When set to true, any multiple instance openshifts that are being assigned will assign only one openshift off the stack rather than the entire stack.
+	AssignOpenshiftInstances *bool `form:"assign_openshift_instances,omitempty" json:"assign_openshift_instances,omitempty"`
+}
+
 // DeleteShiftParams defines parameters for DeleteShift.
 type DeleteShiftParams struct {
 	// Message Used to notify the shift's assignee that their shift has been deleted. Your message will be added to the notification email. If you want to send the notification email without a message, simply send a single space. Must be URL encoded.
@@ -628,11 +663,17 @@ type GetTimesParams struct {
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody LoginJSONBody
 
+// BulkUpdateShiftsJSONRequestBody defines body for BulkUpdateShifts for application/json ContentType.
+type BulkUpdateShiftsJSONRequestBody = BulkEditShiftRequest
+
 // UpdateShiftJSONRequestBody defines body for UpdateShift for application/json ContentType.
 type UpdateShiftJSONRequestBody UpdateShiftJSONBody
 
 // CreateSiteJSONRequestBody defines body for CreateSite for application/json ContentType.
 type CreateSiteJSONRequestBody = SiteRequest
+
+// UpdateSiteJSONRequestBody defines body for UpdateSite for application/json ContentType.
+type UpdateSiteJSONRequestBody = SiteRequest
 
 // CreateTimeJSONRequestBody defines body for CreateTime for application/json ContentType.
 type CreateTimeJSONRequestBody = TimeRequest
@@ -721,6 +762,11 @@ type ClientInterface interface {
 	// GetShifts request
 	GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BulkUpdateShiftsWithBody request with any body
+	BulkUpdateShiftsWithBody(ctx context.Context, params *BulkUpdateShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkUpdateShifts(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteShift request
 	DeleteShift(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -739,6 +785,17 @@ type ClientInterface interface {
 	CreateSiteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateSite(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteSite request
+	DeleteSite(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSite request
+	GetSite(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateSiteWithBody request with any body
+	UpdateSiteWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateSite(ctx context.Context, id int, body UpdateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetTimes request
 	GetTimes(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -786,6 +843,30 @@ func (c *Client) Login(ctx context.Context, params *LoginParams, body LoginJSONR
 
 func (c *Client) GetShifts(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetShiftsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkUpdateShiftsWithBody(ctx context.Context, params *BulkUpdateShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkUpdateShiftsRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkUpdateShifts(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkUpdateShiftsRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -870,6 +951,54 @@ func (c *Client) CreateSiteWithBody(ctx context.Context, contentType string, bod
 
 func (c *Client) CreateSite(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSiteRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSite(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteSiteRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSite(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSiteRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateSiteWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateSiteRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateSite(ctx context.Context, id int, body UpdateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateSiteRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1332,6 +1461,68 @@ func NewGetShiftsRequest(server string, params *GetShiftsParams) (*http.Request,
 	return req, nil
 }
 
+// NewBulkUpdateShiftsRequest calls the generic BulkUpdateShifts builder with application/json body
+func NewBulkUpdateShiftsRequest(server string, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkUpdateShiftsRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewBulkUpdateShiftsRequestWithBody generates requests for BulkUpdateShifts with any type of body
+func NewBulkUpdateShiftsRequestWithBody(server string, params *BulkUpdateShiftsParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/shifts/bulk")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.AssignOpenshiftInstances != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "assign_openshift_instances", runtime.ParamLocationQuery, *params.AssignOpenshiftInstances); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteShiftRequest generates requests for DeleteShift
 func NewDeleteShiftRequest(server string, id int, params *DeleteShiftParams) (*http.Request, error) {
 	var err error
@@ -1609,6 +1800,121 @@ func NewCreateSiteRequestWithBody(server string, contentType string, body io.Rea
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteSiteRequest generates requests for DeleteSite
+func NewDeleteSiteRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/sites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSiteRequest generates requests for GetSite
+func NewGetSiteRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/sites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateSiteRequest calls the generic UpdateSite builder with application/json body
+func NewUpdateSiteRequest(server string, id int, body UpdateSiteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateSiteRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateSiteRequestWithBody generates requests for UpdateSite with any type of body
+func NewUpdateSiteRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/2/sites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -1969,6 +2275,11 @@ type ClientWithResponsesInterface interface {
 	// GetShiftsWithResponse request
 	GetShiftsWithResponse(ctx context.Context, params *GetShiftsParams, reqEditors ...RequestEditorFn) (*GetShiftsResponse, error)
 
+	// BulkUpdateShiftsWithBodyWithResponse request with any body
+	BulkUpdateShiftsWithBodyWithResponse(ctx context.Context, params *BulkUpdateShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkUpdateShiftsResponse, error)
+
+	BulkUpdateShiftsWithResponse(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateShiftsResponse, error)
+
 	// DeleteShiftWithResponse request
 	DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error)
 
@@ -1987,6 +2298,17 @@ type ClientWithResponsesInterface interface {
 	CreateSiteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
 
 	CreateSiteWithResponse(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
+
+	// DeleteSiteWithResponse request
+	DeleteSiteWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteSiteResponse, error)
+
+	// GetSiteWithResponse request
+	GetSiteWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetSiteResponse, error)
+
+	// UpdateSiteWithBodyWithResponse request with any body
+	UpdateSiteWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateSiteResponse, error)
+
+	UpdateSiteWithResponse(ctx context.Context, id int, body UpdateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSiteResponse, error)
 
 	// GetTimesWithResponse request
 	GetTimesWithResponse(ctx context.Context, params *GetTimesParams, reqEditors ...RequestEditorFn) (*GetTimesResponse, error)
@@ -2064,6 +2386,33 @@ func (r GetShiftsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetShiftsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkUpdateShiftsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Shifts Array of shift objects to update
+		Shifts *[]Shift `json:"shifts,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkUpdateShiftsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkUpdateShiftsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2211,6 +2560,85 @@ func (r CreateSiteResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateSiteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSiteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Success Whether deletion was successful.
+		Success *bool `json:"success,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSiteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSiteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSiteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Site *Site `json:"site,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSiteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSiteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateSiteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Site *Site `json:"site,omitempty"`
+	}
+	JSON404     *Error
+	JSONDefault *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateSiteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateSiteResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2374,6 +2802,23 @@ func (c *ClientWithResponses) GetShiftsWithResponse(ctx context.Context, params 
 	return ParseGetShiftsResponse(rsp)
 }
 
+// BulkUpdateShiftsWithBodyWithResponse request with arbitrary body returning *BulkUpdateShiftsResponse
+func (c *ClientWithResponses) BulkUpdateShiftsWithBodyWithResponse(ctx context.Context, params *BulkUpdateShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkUpdateShiftsResponse, error) {
+	rsp, err := c.BulkUpdateShiftsWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkUpdateShiftsResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkUpdateShiftsWithResponse(ctx context.Context, params *BulkUpdateShiftsParams, body BulkUpdateShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateShiftsResponse, error) {
+	rsp, err := c.BulkUpdateShifts(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkUpdateShiftsResponse(rsp)
+}
+
 // DeleteShiftWithResponse request returning *DeleteShiftResponse
 func (c *ClientWithResponses) DeleteShiftWithResponse(ctx context.Context, id int, params *DeleteShiftParams, reqEditors ...RequestEditorFn) (*DeleteShiftResponse, error) {
 	rsp, err := c.DeleteShift(ctx, id, params, reqEditors...)
@@ -2433,6 +2878,41 @@ func (c *ClientWithResponses) CreateSiteWithResponse(ctx context.Context, body C
 		return nil, err
 	}
 	return ParseCreateSiteResponse(rsp)
+}
+
+// DeleteSiteWithResponse request returning *DeleteSiteResponse
+func (c *ClientWithResponses) DeleteSiteWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteSiteResponse, error) {
+	rsp, err := c.DeleteSite(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSiteResponse(rsp)
+}
+
+// GetSiteWithResponse request returning *GetSiteResponse
+func (c *ClientWithResponses) GetSiteWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetSiteResponse, error) {
+	rsp, err := c.GetSite(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSiteResponse(rsp)
+}
+
+// UpdateSiteWithBodyWithResponse request with arbitrary body returning *UpdateSiteResponse
+func (c *ClientWithResponses) UpdateSiteWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateSiteResponse, error) {
+	rsp, err := c.UpdateSiteWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateSiteResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateSiteWithResponse(ctx context.Context, id int, body UpdateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSiteResponse, error) {
+	rsp, err := c.UpdateSite(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateSiteResponse(rsp)
 }
 
 // GetTimesWithResponse request returning *GetTimesResponse
@@ -2565,6 +3045,49 @@ func ParseGetShiftsResponse(rsp *http.Response) (*GetShiftsResponse, error) {
 			// Shiftchains Any shift chains that the fetched shifts are a part of
 			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
 			Shifts      *[]Shift      `json:"shifts,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkUpdateShiftsResponse parses an HTTP response from a BulkUpdateShiftsWithResponse call
+func ParseBulkUpdateShiftsResponse(rsp *http.Response) (*BulkUpdateShiftsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkUpdateShiftsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Shifts Array of shift objects to update
+			Shifts *[]Shift `json:"shifts,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -2784,6 +3307,133 @@ func ParseCreateSiteResponse(rsp *http.Response) (*CreateSiteResponse, error) {
 	}
 
 	response := &CreateSiteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Site *Site `json:"site,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSiteResponse parses an HTTP response from a DeleteSiteWithResponse call
+func ParseDeleteSiteResponse(rsp *http.Response) (*DeleteSiteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSiteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Success Whether deletion was successful.
+			Success *bool `json:"success,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSiteResponse parses an HTTP response from a GetSiteWithResponse call
+func ParseGetSiteResponse(rsp *http.Response) (*GetSiteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSiteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Site *Site `json:"site,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateSiteResponse parses an HTTP response from a UpdateSiteWithResponse call
+func ParseUpdateSiteResponse(rsp *http.Response) (*UpdateSiteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateSiteResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

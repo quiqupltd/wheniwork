@@ -703,6 +703,44 @@ paths:
         '404': *not_found_response
         default: *default_response
 
+  /2/shifts/bulk:
+    put:
+      summary: Bulk Update Shifts
+      operationId: BulkUpdateShifts
+      description: Make updates to multiple shifts in a single API request by submitting an array of the shifts and data to be changed.
+      tags:
+        - Shifts
+      parameters:
+        - name: assign_openshift_instances
+          in: query
+          description: |
+            When set to true, any multiple instance openshifts that are being assigned will assign only one openshift off the stack rather than the entire stack.
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkEditShiftRequest'
+      responses:
+        '200':
+          description: Valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shifts:
+                    description: Array of shift objects to update
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shift'
+        '404': *not_found_response
+        default: *default_response
+
 components:
   securitySchemes:
     W-Token:
@@ -1446,3 +1484,62 @@ components:
         place_id:
           type: string
           example: '2'
+
+    ShiftBulk:
+      type: object
+      required:
+        - id
+        - start_time
+        - end_time
+        - location_id
+      properties:
+        id:
+          type: integer
+          example: 10000
+        account_id:
+          type: integer
+          example: 10000
+        user_id:
+          type: integer
+          example: 101
+          description: The user assigned to the shift. Set to `0` for an Open Shift.
+        location_id:
+          type: integer
+          example: 1045
+          description: Location the shift belongs to
+        position_id:
+          type: integer
+          example: 19483
+        site_id:
+          type: integer
+          example: 4351
+        start_time:
+          type: string
+          format: date-time
+          example: Mon, 08 May 2023 08:30:00 -0600
+        end_time:
+          type: string
+          format: date-time
+          example: Mon, 08 May 2023 14:30:00 -0600
+        break_time:
+          type: number
+          example: 0.5
+        color:
+          type: string
+          example: cc000
+          description: Assign color to shift
+        notes:
+          type: string
+          example: Shift test
+          description: Text notation for a Shift
+        linked_users:
+          type: array
+          items:
+            type: integer
+          description: Array of user IDs that can take this openshift. Null means all users are eligible.
+
+    BulkEditShiftRequest:
+      description: Array of shift objects to update
+      type: array
+      items:
+        $ref: '#/components/schemas/ShiftBulk'
