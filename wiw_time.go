@@ -21,7 +21,8 @@ func (t *WIWTime) UnmarshalJSON(data []byte) error {
 
 	parsedTime, err := time.Parse(WIWTimeFormat, s)
 	if err != nil {
-		return err
+		*t = WIWTime(time.Time{})
+		return nil
 	}
 
 	*t = WIWTime(parsedTime)

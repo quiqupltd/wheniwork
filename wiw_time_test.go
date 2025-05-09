@@ -36,4 +36,12 @@ func Test_WIWTime(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, `{"time":"Fri, 09 May 2025 01:20:22 -0500"}`, string(jsonData))
 	})
+
+	t.Run("should return blank if the time cannot Unmarshal", func(t *testing.T) {
+		var data ExampleData
+		err := json.Unmarshal([]byte(`{"time": "Fri, 09 May -001 01:20:22 -0341"}`), &data)
+
+		require.NoError(t, err)
+		assert.Equal(t, time.Time{}, time.Time(data.Time))
+	})
 }

@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	WTokenScopes  = "WToken.Scopes"
 	W_TokenScopes = "W_Token.Scopes"
 )
 
@@ -68,11 +69,11 @@ const (
 
 // Defines values for UpdateUserRequestRole.
 const (
-	UpdateUserRequestRoleN1Admin           UpdateUserRequestRole = "1 = Admin"
-	UpdateUserRequestRoleN2Manager         UpdateUserRequestRole = "2 = Manager"
-	UpdateUserRequestRoleN3EmployeeDefault UpdateUserRequestRole = "3 = Employee (Default)"
-	UpdateUserRequestRoleN4LeadUnused      UpdateUserRequestRole = "4 = Lead (Unused)"
-	UpdateUserRequestRoleN5Supervisor      UpdateUserRequestRole = "5 = Supervisor"
+	UpdateUserRequestRoleN1 UpdateUserRequestRole = 1
+	UpdateUserRequestRoleN2 UpdateUserRequestRole = 2
+	UpdateUserRequestRoleN3 UpdateUserRequestRole = 3
+	UpdateUserRequestRoleN4 UpdateUserRequestRole = 4
+	UpdateUserRequestRoleN5 UpdateUserRequestRole = 5
 )
 
 // Defines values for UpdateUserRequestType.
@@ -84,11 +85,11 @@ const (
 
 // Defines values for UserRole.
 const (
-	UserRoleN1Admin           UserRole = "1 = Admin"
-	UserRoleN2Manager         UserRole = "2 = Manager"
-	UserRoleN3EmployeeDefault UserRole = "3 = Employee (Default)"
-	UserRoleN4LeadUnused      UserRole = "4 = Lead (Unused)"
-	UserRoleN5Supervisor      UserRole = "5 = Supervisor"
+	UserRoleN1 UserRole = 1
+	UserRoleN2 UserRole = 2
+	UserRoleN3 UserRole = 3
+	UserRoleN4 UserRole = 4
+	UserRoleN5 UserRole = 5
 )
 
 // Defines values for UserType.
@@ -100,18 +101,18 @@ const (
 
 // Defines values for UserRequestRole.
 const (
-	N1Admin           UserRequestRole = "1 = Admin"
-	N2Manager         UserRequestRole = "2 = Manager"
-	N3EmployeeDefault UserRequestRole = "3 = Employee (Default)"
-	N4LeadUnused      UserRequestRole = "4 = Lead (Unused)"
-	N5Supervisor      UserRequestRole = "5 = Supervisor"
+	UserRequestRoleN1 UserRequestRole = 1
+	UserRequestRoleN2 UserRequestRole = 2
+	UserRequestRoleN3 UserRequestRole = 3
+	UserRequestRoleN4 UserRequestRole = 4
+	UserRequestRoleN5 UserRequestRole = 5
 )
 
 // Defines values for UserRequestType.
 const (
-	N1 UserRequestType = 1
-	N2 UserRequestType = 2
-	N3 UserRequestType = 3
+	UserRequestTypeN1 UserRequestType = 1
+	UserRequestTypeN2 UserRequestType = 2
+	UserRequestTypeN3 UserRequestType = 3
 )
 
 // Account defines model for Account.
@@ -217,7 +218,7 @@ type InviteUserResponse struct {
 // Login defines model for Login.
 type Login struct {
 	Avatar *struct {
-		Size *int    `json:"size,omitempty"`
+		Size *string `json:"size,omitempty"`
 		Url  *string `json:"url,omitempty"`
 	} `json:"avatar,omitempty"`
 	CreatedAt *WIWTime             `json:"created_at,omitempty"`
@@ -764,18 +765,6 @@ type UpdateUserRequest struct {
 	// IsDeleted Whether the user has been deleted.
 	IsDeleted *bool `json:"is_deleted,omitempty"`
 
-	// IsHidden Whether the user has been hidden from the scheduler.
-	IsHidden *bool `json:"is_hidden,omitempty"`
-
-	// IsPayroll Whether the user has access to payroll. (Only available for managers and supervisors.)
-	IsPayroll *bool `json:"is_payroll,omitempty"`
-
-	// IsPrivate Whether the user has privacy enabled, which will hide their contact details from other employees. Supervisors+ can not hide their email/phone from other employees.
-	IsPrivate *bool `json:"is_private,omitempty"`
-
-	// IsTrusted Whether the user can edit their own timesheet.
-	IsTrusted *bool `json:"is_trusted,omitempty"`
-
 	// LastLogin The date and time when this user last logged in.
 	LastLogin *WIWTime `json:"last_login,omitempty"`
 
@@ -801,6 +790,11 @@ type UpdateUserRequest struct {
 	Reactivate *bool `json:"reactivate,omitempty"`
 
 	// Role The user's role.
+	// - '1 = Admin'
+	// - '2 = Manager'
+	// - '3 = Employee (Default)'
+	// - '4 = Lead (Unused)'
+	// - '5 = Supervisor'
 	Role *UpdateUserRequestRole `json:"role,omitempty"`
 
 	// Type A bitwise flag representing additional wage options.
@@ -808,7 +802,12 @@ type UpdateUserRequest struct {
 }
 
 // UpdateUserRequestRole The user's role.
-type UpdateUserRequestRole string
+// - '1 = Admin'
+// - '2 = Manager'
+// - '3 = Employee (Default)'
+// - '4 = Lead (Unused)'
+// - '5 = Supervisor'
+type UpdateUserRequestRole int
 
 // UpdateUserRequestType A bitwise flag representing additional wage options.
 type UpdateUserRequestType int
@@ -845,18 +844,6 @@ type User struct {
 	// IsDeleted Whether the user has been deleted.
 	IsDeleted *bool `json:"is_deleted,omitempty"`
 
-	// IsHidden Whether the user has been hidden from the scheduler.
-	IsHidden *bool `json:"is_hidden,omitempty"`
-
-	// IsPayroll Whether the user has access to payroll. (Only available for managers and supervisors.)
-	IsPayroll *bool `json:"is_payroll,omitempty"`
-
-	// IsPrivate Whether the user has privacy enabled, which will hide their contact details from other employees. Supervisors+ can not hide their email/phone from other employees.
-	IsPrivate *bool `json:"is_private,omitempty"`
-
-	// IsTrusted Whether the user can edit their own timesheet.
-	IsTrusted *bool `json:"is_trusted,omitempty"`
-
 	// LastLogin The date and time when this user last logged in.
 	LastLogin *WIWTime `json:"last_login,omitempty"`
 
@@ -879,6 +866,11 @@ type User struct {
 	Positions *[]int `json:"positions,omitempty"`
 
 	// Role The user's role.
+	// - '1 = Admin'
+	// - '2 = Manager'
+	// - '3 = Employee (Default)'
+	// - '4 = Lead (Unused)'
+	// - '5 = Supervisor'
 	Role *UserRole `json:"role,omitempty"`
 
 	// Type A bitwise flag representing additional wage options.
@@ -886,7 +878,12 @@ type User struct {
 }
 
 // UserRole The user's role.
-type UserRole string
+// - '1 = Admin'
+// - '2 = Manager'
+// - '3 = Employee (Default)'
+// - '4 = Lead (Unused)'
+// - '5 = Supervisor'
+type UserRole int
 
 // UserType A bitwise flag representing additional wage options.
 type UserType int
@@ -926,18 +923,6 @@ type UserRequest struct {
 	// IsDeleted Whether the user has been deleted.
 	IsDeleted *bool `json:"is_deleted,omitempty"`
 
-	// IsHidden Whether the user has been hidden from the scheduler.
-	IsHidden *bool `json:"is_hidden,omitempty"`
-
-	// IsPayroll Whether the user has access to payroll. (Only available for managers and supervisors.)
-	IsPayroll *bool `json:"is_payroll,omitempty"`
-
-	// IsPrivate Whether the user has privacy enabled, which will hide their contact details from other employees. Supervisors+ can not hide their email/phone from other employees.
-	IsPrivate *bool `json:"is_private,omitempty"`
-
-	// IsTrusted Whether the user can edit their own timesheet.
-	IsTrusted *bool `json:"is_trusted,omitempty"`
-
 	// LastLogin The date and time when this user last logged in.
 	LastLogin *WIWTime `json:"last_login,omitempty"`
 
@@ -960,6 +945,11 @@ type UserRequest struct {
 	Positions *[]int `json:"positions,omitempty"`
 
 	// Role The user's role.
+	// - '1 = Admin'
+	// - '2 = Manager'
+	// - '3 = Employee (Default)'
+	// - '4 = Lead (Unused)'
+	// - '5 = Supervisor'
 	Role *UserRequestRole `json:"role,omitempty"`
 
 	// Type A bitwise flag representing additional wage options.
@@ -967,7 +957,12 @@ type UserRequest struct {
 }
 
 // UserRequestRole The user's role.
-type UserRequestRole string
+// - '1 = Admin'
+// - '2 = Manager'
+// - '3 = Employee (Default)'
+// - '4 = Lead (Unused)'
+// - '5 = Supervisor'
+type UserRequestRole int
 
 // UserRequestType A bitwise flag representing additional wage options.
 type UserRequestType int
@@ -1178,6 +1173,15 @@ type ListUsersParams struct {
 
 	// Search Optional string to search by in users first name, last name, or email.
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
+// CreateUserParams defines parameters for CreateUser.
+type CreateUserParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // CreateOrUpdateUserAvatarParams defines parameters for CreateOrUpdateUserAvatar.
@@ -1195,10 +1199,31 @@ type InviteSingleUserJSONBody struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// GetUserProfileParams defines parameters for GetUserProfile.
+type GetUserProfileParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
 // DeleteUserParams defines parameters for DeleteUser.
 type DeleteUserParams struct {
 	// DeletedShifts Indicates whether or not to delete this user's future shifts. If not deleted, those shifts will be moved to Open Shifts.
 	DeletedShifts *bool `form:"deleted_shifts,omitempty" json:"deleted_shifts,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
+// GetUserParams defines parameters for GetUser.
+type GetUserParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
+// UpdateUserParams defines parameters for UpdateUser.
+type UpdateUserParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // CreateAccountJSONRequestBody defines body for CreateAccount for application/json ContentType.
@@ -1477,9 +1502,9 @@ type ClientInterface interface {
 	ListUsers(ctx context.Context, params *ListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateUserWithBody request with any body
-	CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateUserWithBody(ctx context.Context, params *CreateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateUser(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateUser(ctx context.Context, params *CreateUserParams, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateOrUpdateUserAvatarWithBody request with any body
 	CreateOrUpdateUserAvatarWithBody(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1500,18 +1525,18 @@ type ClientInterface interface {
 	InviteSingleUser(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUserProfile request
-	GetUserProfile(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetUserProfile(ctx context.Context, params *GetUserProfileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
 	DeleteUser(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUser request
-	GetUser(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetUser(ctx context.Context, id int, params *GetUserParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUserWithBody request with any body
-	UpdateUserWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserWithBody(ctx context.Context, id int, params *UpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUser(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUser(ctx context.Context, id int, params *UpdateUserParams, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2126,8 +2151,8 @@ func (c *Client) ListUsers(ctx context.Context, params *ListUsersParams, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateUserRequestWithBody(c.Server, contentType, body)
+func (c *Client) CreateUserWithBody(ctx context.Context, params *CreateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2138,8 +2163,8 @@ func (c *Client) CreateUserWithBody(ctx context.Context, contentType string, bod
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateUser(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateUserRequest(c.Server, body)
+func (c *Client) CreateUser(ctx context.Context, params *CreateUserParams, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2234,8 +2259,8 @@ func (c *Client) InviteSingleUser(ctx context.Context, id int, body InviteSingle
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetUserProfile(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetUserProfileRequest(c.Server)
+func (c *Client) GetUserProfile(ctx context.Context, params *GetUserProfileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserProfileRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2258,8 +2283,8 @@ func (c *Client) DeleteUser(ctx context.Context, id int, params *DeleteUserParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetUser(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetUserRequest(c.Server, id)
+func (c *Client) GetUser(ctx context.Context, id int, params *GetUserParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2270,8 +2295,8 @@ func (c *Client) GetUser(ctx context.Context, id int, reqEditors ...RequestEdito
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateUserWithBody(ctx context.Context, id int, params *UpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserRequestWithBody(c.Server, id, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2282,8 +2307,8 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id int, contentType str
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUser(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateUserRequest(c.Server, id, body)
+func (c *Client) UpdateUser(ctx context.Context, id int, params *UpdateUserParams, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4418,22 +4443,35 @@ func NewListUsersRequest(server string, params *ListUsersParams) (*http.Request,
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
 // NewCreateUserRequest calls the generic CreateUser builder with application/json body
-func NewCreateUserRequest(server string, body CreateUserJSONRequestBody) (*http.Request, error) {
+func NewCreateUserRequest(server string, params *CreateUserParams, body CreateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateUserRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateUserRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewCreateUserRequestWithBody generates requests for CreateUser with any type of body
-func NewCreateUserRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewCreateUserRequestWithBody(server string, params *CreateUserParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4457,6 +4495,19 @@ func NewCreateUserRequestWithBody(server string, contentType string, body io.Rea
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
 
 	return req, nil
 }
@@ -4638,7 +4689,7 @@ func NewInviteSingleUserRequestWithBody(server string, id int, contentType strin
 }
 
 // NewGetUserProfileRequest generates requests for GetUserProfile
-func NewGetUserProfileRequest(server string) (*http.Request, error) {
+func NewGetUserProfileRequest(server string, params *GetUserProfileParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4659,6 +4710,19 @@ func NewGetUserProfileRequest(server string) (*http.Request, error) {
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
 	}
 
 	return req, nil
@@ -4717,11 +4781,24 @@ func NewDeleteUserRequest(server string, id int, params *DeleteUserParams) (*htt
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
 // NewGetUserRequest generates requests for GetUser
-func NewGetUserRequest(server string, id int) (*http.Request, error) {
+func NewGetUserRequest(server string, id int, params *GetUserParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -4751,22 +4828,35 @@ func NewGetUserRequest(server string, id int) (*http.Request, error) {
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
 // NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
-func NewUpdateUserRequest(server string, id int, body UpdateUserJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserRequest(server string, id int, params *UpdateUserParams, body UpdateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateUserRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateUserRequestWithBody(server, id, params, "application/json", bodyReader)
 }
 
 // NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
-func NewUpdateUserRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserRequestWithBody(server string, id int, params *UpdateUserParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -4797,6 +4887,19 @@ func NewUpdateUserRequestWithBody(server string, id int, contentType string, bod
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
 
 	return req, nil
 }
@@ -4981,9 +5084,9 @@ type ClientWithResponsesInterface interface {
 	ListUsersWithResponse(ctx context.Context, params *ListUsersParams, reqEditors ...RequestEditorFn) (*ListUsersResponse, error)
 
 	// CreateUserWithBodyWithResponse request with any body
-	CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
+	CreateUserWithBodyWithResponse(ctx context.Context, params *CreateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
 
-	CreateUserWithResponse(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
+	CreateUserWithResponse(ctx context.Context, params *CreateUserParams, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error)
 
 	// CreateOrUpdateUserAvatarWithBodyWithResponse request with any body
 	CreateOrUpdateUserAvatarWithBodyWithResponse(ctx context.Context, id int, params *CreateOrUpdateUserAvatarParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrUpdateUserAvatarResponse, error)
@@ -5004,18 +5107,18 @@ type ClientWithResponsesInterface interface {
 	InviteSingleUserWithResponse(ctx context.Context, id int, body InviteSingleUserJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteSingleUserResponse, error)
 
 	// GetUserProfileWithResponse request
-	GetUserProfileWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUserProfileResponse, error)
+	GetUserProfileWithResponse(ctx context.Context, params *GetUserProfileParams, reqEditors ...RequestEditorFn) (*GetUserProfileResponse, error)
 
 	// DeleteUserWithResponse request
 	DeleteUserWithResponse(ctx context.Context, id int, params *DeleteUserParams, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// GetUserWithResponse request
-	GetUserWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetUserResponse, error)
+	GetUserWithResponse(ctx context.Context, id int, params *GetUserParams, reqEditors ...RequestEditorFn) (*GetUserResponse, error)
 
 	// UpdateUserWithBodyWithResponse request with any body
-	UpdateUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithBodyWithResponse(ctx context.Context, id int, params *UpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id int, params *UpdateUserParams, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 }
 
 type GetAccountResponse struct {
@@ -5947,6 +6050,7 @@ type CreateUserResponse struct {
 	JSON200      *struct {
 		User *User `json:"user,omitempty"`
 	}
+	JSON401     *Error
 	JSON404     *Error
 	JSONDefault *Error
 }
@@ -6069,6 +6173,9 @@ type GetUserProfileResponse struct {
 	JSON200      *struct {
 		User *User `json:"user,omitempty"`
 	}
+	JSON401     *Error
+	JSON404     *Error
+	JSONDefault *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -6119,6 +6226,7 @@ type GetUserResponse struct {
 	JSON200      *struct {
 		User *User `json:"user,omitempty"`
 	}
+	JSON401     *Error
 	JSON404     *Error
 	JSONDefault *Error
 }
@@ -6608,16 +6716,16 @@ func (c *ClientWithResponses) ListUsersWithResponse(ctx context.Context, params 
 }
 
 // CreateUserWithBodyWithResponse request with arbitrary body returning *CreateUserResponse
-func (c *ClientWithResponses) CreateUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error) {
-	rsp, err := c.CreateUserWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateUserWithBodyWithResponse(ctx context.Context, params *CreateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserResponse, error) {
+	rsp, err := c.CreateUserWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateUserWithResponse(ctx context.Context, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error) {
-	rsp, err := c.CreateUser(ctx, body, reqEditors...)
+func (c *ClientWithResponses) CreateUserWithResponse(ctx context.Context, params *CreateUserParams, body CreateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserResponse, error) {
+	rsp, err := c.CreateUser(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6685,8 +6793,8 @@ func (c *ClientWithResponses) InviteSingleUserWithResponse(ctx context.Context, 
 }
 
 // GetUserProfileWithResponse request returning *GetUserProfileResponse
-func (c *ClientWithResponses) GetUserProfileWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUserProfileResponse, error) {
-	rsp, err := c.GetUserProfile(ctx, reqEditors...)
+func (c *ClientWithResponses) GetUserProfileWithResponse(ctx context.Context, params *GetUserProfileParams, reqEditors ...RequestEditorFn) (*GetUserProfileResponse, error) {
+	rsp, err := c.GetUserProfile(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6703,8 +6811,8 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id int
 }
 
 // GetUserWithResponse request returning *GetUserResponse
-func (c *ClientWithResponses) GetUserWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetUserResponse, error) {
-	rsp, err := c.GetUser(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetUserWithResponse(ctx context.Context, id int, params *GetUserParams, reqEditors ...RequestEditorFn) (*GetUserResponse, error) {
+	rsp, err := c.GetUser(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6712,16 +6820,16 @@ func (c *ClientWithResponses) GetUserWithResponse(ctx context.Context, id int, r
 }
 
 // UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
-func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
-	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id int, params *UpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+	rsp, err := c.UpdateUserWithBody(ctx, id, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id int, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
-	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id int, params *UpdateUserParams, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+	rsp, err := c.UpdateUser(ctx, id, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -8123,6 +8231,13 @@ func ParseCreateUserResponse(rsp *http.Response) (*CreateUserResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -8313,6 +8428,27 @@ func ParseGetUserProfileResponse(rsp *http.Response) (*GetUserProfileResponse, e
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -8382,6 +8518,13 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
