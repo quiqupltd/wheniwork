@@ -45,6 +45,23 @@ tags:
       schema:
         $ref: '#/components/schemas/Error'
 
+# Ignore this for linting its ok
+.unauthorized_response: &unauthorized_response
+  description: Unauthorized
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+
+# Ignore this for linting its ok
+.account_user_id: &account_user_id
+  name: W-UserID
+  in: header
+  description: The ID of the account user
+  required: true
+  schema:
+    type: integer
+
 paths:
   /2/login:
     post:
@@ -1149,9 +1166,12 @@ paths:
       summary: List Users
       operationId: ListUsers
       description: List all the users in your account
+      security:
+        - WToken: []
       tags:
         - Users
       parameters:
+        - *account_user_id
         - name: location_id
           in: query
           description: One or more location IDs by which to limit results
@@ -1218,6 +1238,10 @@ paths:
       description: Used to create a user
       tags:
         - Users
+      security:
+        - WToken: []
+      parameters:
+        - *account_user_id
       requestBody:
         required: true
         content:
@@ -1235,6 +1259,7 @@ paths:
                   user:
                     $ref: '#/components/schemas/User'
         '404': *not_found_response
+        '401': *unauthorized_response
         default: *default_response
 
   /2/users/{id}:
@@ -1242,9 +1267,12 @@ paths:
       summary: Get User
       operationId: GetUser
       description: Get a single user by ID
+      security:
+        - WToken: []
       tags:
         - Users
       parameters:
+        - *account_user_id
         - name: id
           in: path
           description: The ID of the user
@@ -1261,6 +1289,7 @@ paths:
                 properties:
                   user:
                     $ref: '#/components/schemas/User'
+        '401': *unauthorized_response
         '404': *not_found_response
         default: *default_response
     put:
@@ -1269,7 +1298,10 @@ paths:
       description: Updates a single user
       tags:
         - Users
+      security:
+        - WToken: []
       parameters:
+        - *account_user_id
         - name: id
           in: path
           description: The ID of the user
@@ -1300,7 +1332,10 @@ paths:
       description: Delete an existing user. This action can be reversed.
       tags:
         - Users
+      security:
+        - WToken: []
       parameters:
+        - *account_user_id
         - name: id
           in: path
           description: The ID of the user
@@ -1468,6 +1503,10 @@ paths:
         Multi-line YAML is used for this description as per guidelines.
       tags:
         - Users
+      security:
+        - WToken: []
+      parameters:
+        - *account_user_id
       responses:
         '200':
           description: Valid
@@ -1478,7 +1517,9 @@ paths:
                 properties:
                   user:
                     $ref: '#/components/schemas/User'
-          default: *default_response
+        '401': *unauthorized_response
+        '404': *not_found_response
+        default: *default_response
       post:
         summary: Update User Profile
         operationId: UpdateUserProfile
@@ -1488,6 +1529,10 @@ paths:
           Multi-line YAML is used for this description as per guidelines.
         tags:
           - Users
+        security:
+          - WToken: []
+        parameters:
+          - *account_user_id
         requestBody:
           required: true
           content:
@@ -1526,6 +1571,8 @@ paths:
                   properties:
                     user:
                       $ref: '#/components/schemas/User'
+          '401': *unauthorized_response
+          '404': *not_found_response
           default: *default_response
 
   /2/locations:
@@ -1733,7 +1780,6 @@ paths:
         - name: id
           in: path
           description: The ID of the account
-          required: true
           schema:
             type: integer
       requestBody:
@@ -1756,11 +1802,10 @@ paths:
 
 components:
   securitySchemes:
-    W-Token:
-      type: http
-      scheme: bearer
-      bearerFormat: JSON Web Token
-      description: JWT Login token
+    WToken:
+      type: apiKey
+      in: header
+      name: W-Token
 
   schemas:
     Error:
@@ -2280,18 +2325,6 @@ components:
         is_deleted:
           description: Whether the user has been deleted.
           type: boolean
-        is_hidden:
-          description: Whether the user has been hidden from the scheduler.
-          type: boolean
-        is_payroll:
-          description: Whether the user has access to payroll. (Only available for managers and supervisors.)
-          type: boolean
-        is_private:
-          description: Whether the user has privacy enabled, which will hide their contact details from other employees. Supervisors+ can not hide their email/phone from other employees.
-          type: boolean
-        is_trusted:
-          description: Whether the user can edit their own timesheet.
-          type: boolean
         last_login:
           description: The date and time when this user last logged in.
           format: date-time
@@ -2320,14 +2353,21 @@ components:
           items:
             type: integer
         role:
-          description: The user's role.
-          type: string
-          enum:
+          description: |
+            The user's role.
             - '1 = Admin'
             - '2 = Manager'
             - '3 = Employee (Default)'
             - '4 = Lead (Unused)'
             - '5 = Supervisor'
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+
         type:
           description: A bitwise flag representing additional wage options.
           type: integer
@@ -2366,7 +2406,7 @@ components:
             url:
               type: string
             size:
-              type: integer
+              type: string
         token:
           type: string
 
@@ -2816,11 +2856,8 @@ components:
 
     AvatarRequest:
       description: The avatar image file to upload
-      content:
-        image/*:
-          schema:
-            type: string
-            format: binary
+      type: string
+      format: binary
 
     BulkUserResponse:
       description: Response for both Valid/Invalid requests
