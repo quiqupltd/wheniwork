@@ -276,19 +276,19 @@ type Place struct {
 
 // Position defines model for Position.
 type Position struct {
-	AccountId *int       `json:"account_id,omitempty"`
-	Color     *string    `json:"color,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Id        *int       `json:"id,omitempty"`
-	Name      *string    `json:"name,omitempty"`
+	AccountId *int     `json:"account_id,omitempty"`
+	Color     *string  `json:"color,omitempty"`
+	CreatedAt *WIWTime `json:"created_at,omitempty"`
+	Id        *int     `json:"id,omitempty"`
+	Name      *string  `json:"name,omitempty"`
 
 	// Sort Custom sort order applied to this position
 	Sort *int `json:"sort,omitempty"`
 
 	// TipsTracking Whether this position tracks tips.
 	// Note: the tips feature is needed to use this field.
-	TipsTracking *bool      `json:"tips_tracking,omitempty"`
-	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
+	TipsTracking *bool    `json:"tips_tracking,omitempty"`
+	UpdatedAt    *WIWTime `json:"updated_at,omitempty"`
 }
 
 // Schedule defines model for Schedule.
@@ -300,7 +300,7 @@ type Schedule struct {
 	DeletedAt      *WIWTime   `json:"deleted_at,omitempty"`
 	Id             *int       `json:"id,omitempty"`
 	IpAddress      *string    `json:"ip_address,omitempty"`
-	IsDefault      *bool      `json:"is_default,omitempty"`
+	IsDefault      *int       `json:"is_default,omitempty"`
 	IsDeleted      *bool      `json:"is_deleted,omitempty"`
 	Latitude       *float32   `json:"latitude,omitempty"`
 	Longitude      *float32   `json:"longitude,omitempty"`
@@ -308,7 +308,7 @@ type Schedule struct {
 	Name           *string    `json:"name,omitempty"`
 	Place          *Place     `json:"place,omitempty"`
 	PlaceConfirmed *bool      `json:"place_confirmed,omitempty"`
-	PlaceId        *string    `json:"place_id,omitempty"`
+	PlaceId        *int       `json:"place_id,omitempty"`
 	Radius         *int       `json:"radius,omitempty"`
 	Sort           *int       `json:"sort,omitempty"`
 	UpdatedAt      *WIWTime   `json:"updated_at,omitempty"`
