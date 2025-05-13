@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-05-13
+
+### Added
+
+- Added Position entity to schema
+
+### Changed
+
+- Updates shifts response to include additional data, locations, sites and users
+- Error code from string to int
+- Updated some broken field mappings, mainly bool -> int
+- Make sure WUser-Id header is available for more endpoints
+
 ## [v0.6.0] - 2025-05-11
 
 ### Added

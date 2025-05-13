@@ -182,7 +182,7 @@ type BulkUserResponse struct {
 
 // Error defines model for Error.
 type Error struct {
-	Code    *string                 `json:"code,omitempty"`
+	Code    *int                    `json:"code,omitempty"`
 	Details *map[string]interface{} `json:"details,omitempty"`
 	Error   *string                 `json:"error,omitempty"`
 	Message *string                 `json:"message,omitempty"`
@@ -274,6 +274,23 @@ type Place struct {
 	UpdatedAt    *WIWTime  `json:"updated_at,omitempty"`
 }
 
+// Position defines model for Position.
+type Position struct {
+	AccountId *int     `json:"account_id,omitempty"`
+	Color     *string  `json:"color,omitempty"`
+	CreatedAt *WIWTime `json:"created_at,omitempty"`
+	Id        *int     `json:"id,omitempty"`
+	Name      *string  `json:"name,omitempty"`
+
+	// Sort Custom sort order applied to this position
+	Sort *int `json:"sort,omitempty"`
+
+	// TipsTracking Whether this position tracks tips.
+	// Note: the tips feature is needed to use this field.
+	TipsTracking *bool    `json:"tips_tracking,omitempty"`
+	UpdatedAt    *WIWTime `json:"updated_at,omitempty"`
+}
+
 // Schedule defines model for Schedule.
 type Schedule struct {
 	AccountId      *int       `json:"account_id,omitempty"`
@@ -283,7 +300,7 @@ type Schedule struct {
 	DeletedAt      *WIWTime   `json:"deleted_at,omitempty"`
 	Id             *int       `json:"id,omitempty"`
 	IpAddress      *string    `json:"ip_address,omitempty"`
-	IsDefault      *bool      `json:"is_default,omitempty"`
+	IsDefault      *int       `json:"is_default,omitempty"`
 	IsDeleted      *bool      `json:"is_deleted,omitempty"`
 	Latitude       *float32   `json:"latitude,omitempty"`
 	Longitude      *float32   `json:"longitude,omitempty"`
@@ -291,7 +308,7 @@ type Schedule struct {
 	Name           *string    `json:"name,omitempty"`
 	Place          *Place     `json:"place,omitempty"`
 	PlaceConfirmed *bool      `json:"place_confirmed,omitempty"`
-	PlaceId        *string    `json:"place_id,omitempty"`
+	PlaceId        *int       `json:"place_id,omitempty"`
 	Radius         *int       `json:"radius,omitempty"`
 	Sort           *int       `json:"sort,omitempty"`
 	UpdatedAt      *WIWTime   `json:"updated_at,omitempty"`
@@ -317,10 +334,10 @@ type ScheduleRequest struct {
 
 // Shift defines model for Shift.
 type Shift struct {
-	AccountId *int `json:"account_id,omitempty"`
+	AccountId int `json:"account_id"`
 
 	// Acknowledged If enabled; When the user confirmed the shift
-	Acknowledged *bool `json:"acknowledged,omitempty"`
+	Acknowledged *int `json:"acknowledged,omitempty"`
 
 	// AcknowledgedAt If enabled; When the user confirmed the shift
 	AcknowledgedAt *WIWTime `json:"acknowledged_at,omitempty"`
@@ -382,7 +399,7 @@ type Shift struct {
 	UpdatedAt     *WIWTime `json:"updated_at,omitempty"`
 
 	// UserId The user assigned to the shift. Set to `0` for an Open Shift.
-	UserId *int `json:"user_id,omitempty"`
+	UserId int `json:"user_id"`
 }
 
 // ShiftAssignRequest defines model for ShiftAssignRequest.
@@ -1046,14 +1063,17 @@ type ListShiftsParams struct {
 	// according to the scheduling rules settings for the account.
 	LimitByRules *bool `form:"limit_by_rules,omitempty" json:"limit_by_rules,omitempty"`
 
-	// WUserID The user to select account context for
-	WUserID *string `json:"W-UserID,omitempty"`
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // BulkUpdateShiftsParams defines parameters for BulkUpdateShifts.
 type BulkUpdateShiftsParams struct {
 	// AssignOpenshiftInstances When set to true, any multiple instance openshifts that are being assigned will assign only one openshift off the stack rather than the entire stack.
 	AssignOpenshiftInstances *bool `form:"assign_openshift_instances,omitempty" json:"assign_openshift_instances,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // ListEligibleUsersForOpenShiftParams defines parameters for ListEligibleUsersForOpenShift.
@@ -1075,6 +1095,27 @@ type ListEligibleUsersForOpenShiftParams struct {
 
 	// IsShared Is the shift a shared OpenShift
 	IsShared *bool `form:"is_shared,omitempty" json:"is_shared,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
+// NotifyShiftsParams defines parameters for NotifyShifts.
+type NotifyShiftsParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
+// NotifySingleShiftParams defines parameters for NotifySingleShift.
+type NotifySingleShiftParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
+// PublishShiftsParams defines parameters for PublishShifts.
+type PublishShiftsParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // DeleteShiftParams defines parameters for DeleteShift.
@@ -1090,6 +1131,9 @@ type DeleteShiftParams struct {
 type GetShiftParams struct {
 	// IncludeRepeatingShiftsTo End date to include repeating shifts in series, if applicable
 	IncludeRepeatingShiftsTo *WIWTime `form:"include_repeating_shifts_to,omitempty" json:"include_repeating_shifts_to,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // UpdateShiftJSONBody defines parameters for UpdateShift.
@@ -1110,6 +1154,9 @@ type UpdateShiftJSONBody1 = []Shift
 type GetShiftHistoryParams struct {
 	// IncludeDeleted Flag to indicate if you want to search for a deleted shift's history (off by default)
 	IncludeDeleted *bool `form:"include_deleted,omitempty" json:"include_deleted,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // GetSwapUsersParams defines parameters for GetSwapUsers.
@@ -1122,12 +1169,24 @@ type GetSwapUsersParams struct {
 
 	// IdsOnly Flag to indicate if only the IDs of the eligible takers should be returned
 	IdsOnly *int `form:"ids_only,omitempty" json:"ids_only,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // ListSitesParams defines parameters for ListSites.
 type ListSitesParams struct {
 	// IncludeDeleted Include deleted sites
 	IncludeDeleted *bool `form:"include_deleted,omitempty" json:"include_deleted,omitempty"`
+
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
+}
+
+// CreateSiteParams defines parameters for CreateSite.
+type CreateSiteParams struct {
+	// WUserID The ID of the account user
+	WUserID int `json:"W-UserID"`
 }
 
 // ListTimesParams defines parameters for ListTimes.
@@ -1414,19 +1473,19 @@ type ClientInterface interface {
 	ListEligibleUsersForOpenShift(ctx context.Context, params *ListEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// NotifyShiftsWithBody request with any body
-	NotifyShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	NotifyShiftsWithBody(ctx context.Context, params *NotifyShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	NotifyShifts(ctx context.Context, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	NotifyShifts(ctx context.Context, params *NotifyShiftsParams, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// NotifySingleShiftWithBody request with any body
-	NotifySingleShiftWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	NotifySingleShiftWithBody(ctx context.Context, id int, params *NotifySingleShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	NotifySingleShift(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	NotifySingleShift(ctx context.Context, id int, params *NotifySingleShiftParams, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PublishShiftsWithBody request with any body
-	PublishShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PublishShiftsWithBody(ctx context.Context, params *PublishShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PublishShifts(ctx context.Context, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PublishShifts(ctx context.Context, params *PublishShiftsParams, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UnassignShiftsWithBody request with any body
 	UnassignShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1464,9 +1523,9 @@ type ClientInterface interface {
 	ListSites(ctx context.Context, params *ListSitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSiteWithBody request with any body
-	CreateSiteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateSiteWithBody(ctx context.Context, params *CreateSiteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateSite(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateSite(ctx context.Context, params *CreateSiteParams, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteSite request
 	DeleteSite(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1755,8 +1814,8 @@ func (c *Client) ListEligibleUsersForOpenShift(ctx context.Context, params *List
 	return c.Client.Do(req)
 }
 
-func (c *Client) NotifyShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewNotifyShiftsRequestWithBody(c.Server, contentType, body)
+func (c *Client) NotifyShiftsWithBody(ctx context.Context, params *NotifyShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifyShiftsRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1767,8 +1826,8 @@ func (c *Client) NotifyShiftsWithBody(ctx context.Context, contentType string, b
 	return c.Client.Do(req)
 }
 
-func (c *Client) NotifyShifts(ctx context.Context, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewNotifyShiftsRequest(c.Server, body)
+func (c *Client) NotifyShifts(ctx context.Context, params *NotifyShiftsParams, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifyShiftsRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1779,8 +1838,8 @@ func (c *Client) NotifyShifts(ctx context.Context, body NotifyShiftsJSONRequestB
 	return c.Client.Do(req)
 }
 
-func (c *Client) NotifySingleShiftWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewNotifySingleShiftRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) NotifySingleShiftWithBody(ctx context.Context, id int, params *NotifySingleShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifySingleShiftRequestWithBody(c.Server, id, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1791,8 +1850,8 @@ func (c *Client) NotifySingleShiftWithBody(ctx context.Context, id int, contentT
 	return c.Client.Do(req)
 }
 
-func (c *Client) NotifySingleShift(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewNotifySingleShiftRequest(c.Server, id, body)
+func (c *Client) NotifySingleShift(ctx context.Context, id int, params *NotifySingleShiftParams, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifySingleShiftRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1803,8 +1862,8 @@ func (c *Client) NotifySingleShift(ctx context.Context, id int, body NotifySingl
 	return c.Client.Do(req)
 }
 
-func (c *Client) PublishShiftsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPublishShiftsRequestWithBody(c.Server, contentType, body)
+func (c *Client) PublishShiftsWithBody(ctx context.Context, params *PublishShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishShiftsRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1815,8 +1874,8 @@ func (c *Client) PublishShiftsWithBody(ctx context.Context, contentType string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) PublishShifts(ctx context.Context, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPublishShiftsRequest(c.Server, body)
+func (c *Client) PublishShifts(ctx context.Context, params *PublishShiftsParams, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishShiftsRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1983,8 +2042,8 @@ func (c *Client) ListSites(ctx context.Context, params *ListSitesParams, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateSiteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateSiteRequestWithBody(c.Server, contentType, body)
+func (c *Client) CreateSiteWithBody(ctx context.Context, params *CreateSiteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSiteRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1995,8 +2054,8 @@ func (c *Client) CreateSiteWithBody(ctx context.Context, contentType string, bod
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateSite(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateSiteRequest(c.Server, body)
+func (c *Client) CreateSite(ctx context.Context, params *CreateSiteParams, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSiteRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3011,16 +3070,14 @@ func NewListShiftsRequest(server string, params *ListShiftsParams) (*http.Reques
 
 	if params != nil {
 
-		if params.WUserID != nil {
-			var headerParam0 string
+		var headerParam0 string
 
-			headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, *params.WUserID)
-			if err != nil {
-				return nil, err
-			}
-
-			req.Header.Set("W-UserID", headerParam0)
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
 		}
+
+		req.Header.Set("W-UserID", headerParam0)
 
 	}
 
@@ -3085,6 +3142,19 @@ func NewBulkUpdateShiftsRequestWithBody(server string, params *BulkUpdateShiftsP
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
 
 	return req, nil
 }
@@ -3215,22 +3285,35 @@ func NewListEligibleUsersForOpenShiftRequest(server string, params *ListEligible
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
 // NewNotifyShiftsRequest calls the generic NotifyShifts builder with application/json body
-func NewNotifyShiftsRequest(server string, body NotifyShiftsJSONRequestBody) (*http.Request, error) {
+func NewNotifyShiftsRequest(server string, params *NotifyShiftsParams, body NotifyShiftsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewNotifyShiftsRequestWithBody(server, "application/json", bodyReader)
+	return NewNotifyShiftsRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewNotifyShiftsRequestWithBody generates requests for NotifyShifts with any type of body
-func NewNotifyShiftsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewNotifyShiftsRequestWithBody(server string, params *NotifyShiftsParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3255,22 +3338,35 @@ func NewNotifyShiftsRequestWithBody(server string, contentType string, body io.R
 
 	req.Header.Add("Content-Type", contentType)
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
 // NewNotifySingleShiftRequest calls the generic NotifySingleShift builder with application/json body
-func NewNotifySingleShiftRequest(server string, id int, body NotifySingleShiftJSONRequestBody) (*http.Request, error) {
+func NewNotifySingleShiftRequest(server string, id int, params *NotifySingleShiftParams, body NotifySingleShiftJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewNotifySingleShiftRequestWithBody(server, id, "application/json", bodyReader)
+	return NewNotifySingleShiftRequestWithBody(server, id, params, "application/json", bodyReader)
 }
 
 // NewNotifySingleShiftRequestWithBody generates requests for NotifySingleShift with any type of body
-func NewNotifySingleShiftRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewNotifySingleShiftRequestWithBody(server string, id int, params *NotifySingleShiftParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3302,22 +3398,35 @@ func NewNotifySingleShiftRequestWithBody(server string, id int, contentType stri
 
 	req.Header.Add("Content-Type", contentType)
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
 // NewPublishShiftsRequest calls the generic PublishShifts builder with application/json body
-func NewPublishShiftsRequest(server string, body PublishShiftsJSONRequestBody) (*http.Request, error) {
+func NewPublishShiftsRequest(server string, params *PublishShiftsParams, body PublishShiftsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPublishShiftsRequestWithBody(server, "application/json", bodyReader)
+	return NewPublishShiftsRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewPublishShiftsRequestWithBody generates requests for PublishShifts with any type of body
-func NewPublishShiftsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewPublishShiftsRequestWithBody(server string, params *PublishShiftsParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3341,6 +3450,19 @@ func NewPublishShiftsRequestWithBody(server string, contentType string, body io.
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
 
 	return req, nil
 }
@@ -3550,6 +3672,19 @@ func NewGetShiftRequest(server string, id int, params *GetShiftParams) (*http.Re
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
@@ -3722,6 +3857,19 @@ func NewGetShiftHistoryRequest(server string, id int, params *GetShiftHistoryPar
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
@@ -3810,6 +3958,19 @@ func NewGetSwapUsersRequest(server string, id int, params *GetSwapUsersParams) (
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
@@ -3859,22 +4020,35 @@ func NewListSitesRequest(server string, params *ListSitesParams) (*http.Request,
 		return nil, err
 	}
 
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
+
 	return req, nil
 }
 
 // NewCreateSiteRequest calls the generic CreateSite builder with application/json body
-func NewCreateSiteRequest(server string, body CreateSiteJSONRequestBody) (*http.Request, error) {
+func NewCreateSiteRequest(server string, params *CreateSiteParams, body CreateSiteJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateSiteRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateSiteRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewCreateSiteRequestWithBody generates requests for CreateSite with any type of body
-func NewCreateSiteRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewCreateSiteRequestWithBody(server string, params *CreateSiteParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3898,6 +4072,19 @@ func NewCreateSiteRequestWithBody(server string, contentType string, body io.Rea
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "W-UserID", runtime.ParamLocationHeader, params.WUserID)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("W-UserID", headerParam0)
+
+	}
 
 	return req, nil
 }
@@ -4996,19 +5183,19 @@ type ClientWithResponsesInterface interface {
 	ListEligibleUsersForOpenShiftWithResponse(ctx context.Context, params *ListEligibleUsersForOpenShiftParams, reqEditors ...RequestEditorFn) (*ListEligibleUsersForOpenShiftResponse, error)
 
 	// NotifyShiftsWithBodyWithResponse request with any body
-	NotifyShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error)
+	NotifyShiftsWithBodyWithResponse(ctx context.Context, params *NotifyShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error)
 
-	NotifyShiftsWithResponse(ctx context.Context, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error)
+	NotifyShiftsWithResponse(ctx context.Context, params *NotifyShiftsParams, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error)
 
 	// NotifySingleShiftWithBodyWithResponse request with any body
-	NotifySingleShiftWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error)
+	NotifySingleShiftWithBodyWithResponse(ctx context.Context, id int, params *NotifySingleShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error)
 
-	NotifySingleShiftWithResponse(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error)
+	NotifySingleShiftWithResponse(ctx context.Context, id int, params *NotifySingleShiftParams, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error)
 
 	// PublishShiftsWithBodyWithResponse request with any body
-	PublishShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error)
+	PublishShiftsWithBodyWithResponse(ctx context.Context, params *PublishShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error)
 
-	PublishShiftsWithResponse(ctx context.Context, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error)
+	PublishShiftsWithResponse(ctx context.Context, params *PublishShiftsParams, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error)
 
 	// UnassignShiftsWithBodyWithResponse request with any body
 	UnassignShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UnassignShiftsResponse, error)
@@ -5046,9 +5233,9 @@ type ClientWithResponsesInterface interface {
 	ListSitesWithResponse(ctx context.Context, params *ListSitesParams, reqEditors ...RequestEditorFn) (*ListSitesResponse, error)
 
 	// CreateSiteWithBodyWithResponse request with any body
-	CreateSiteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
+	CreateSiteWithBodyWithResponse(ctx context.Context, params *CreateSiteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
 
-	CreateSiteWithResponse(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
+	CreateSiteWithResponse(ctx context.Context, params *CreateSiteParams, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error)
 
 	// DeleteSiteWithResponse request
 	DeleteSiteWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteSiteResponse, error)
@@ -5355,6 +5542,9 @@ type ListShiftsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
+		Locations *[]Schedule `json:"locations,omitempty"`
+		Positions *[]Position `json:"positions,omitempty"`
+
 		// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. For each
 		// fetched shift, if it is on a shift chain, we will insert all the shifts on that chain from the
 		// first up to the date specified in the parameter.
@@ -5363,6 +5553,8 @@ type ListShiftsResponse struct {
 		// Shiftchains Any shift chains that the fetched shifts are a part of
 		Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
 		Shifts      *[]Shift      `json:"shifts,omitempty"`
+		Sites       *[]Site       `json:"sites,omitempty"`
+		Users       *[]User       `json:"users,omitempty"`
 	}
 	JSON404     *Error
 	JSONDefault *Error
@@ -6430,16 +6622,16 @@ func (c *ClientWithResponses) ListEligibleUsersForOpenShiftWithResponse(ctx cont
 }
 
 // NotifyShiftsWithBodyWithResponse request with arbitrary body returning *NotifyShiftsResponse
-func (c *ClientWithResponses) NotifyShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error) {
-	rsp, err := c.NotifyShiftsWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) NotifyShiftsWithBodyWithResponse(ctx context.Context, params *NotifyShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error) {
+	rsp, err := c.NotifyShiftsWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseNotifyShiftsResponse(rsp)
 }
 
-func (c *ClientWithResponses) NotifyShiftsWithResponse(ctx context.Context, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error) {
-	rsp, err := c.NotifyShifts(ctx, body, reqEditors...)
+func (c *ClientWithResponses) NotifyShiftsWithResponse(ctx context.Context, params *NotifyShiftsParams, body NotifyShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifyShiftsResponse, error) {
+	rsp, err := c.NotifyShifts(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6447,16 +6639,16 @@ func (c *ClientWithResponses) NotifyShiftsWithResponse(ctx context.Context, body
 }
 
 // NotifySingleShiftWithBodyWithResponse request with arbitrary body returning *NotifySingleShiftResponse
-func (c *ClientWithResponses) NotifySingleShiftWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error) {
-	rsp, err := c.NotifySingleShiftWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) NotifySingleShiftWithBodyWithResponse(ctx context.Context, id int, params *NotifySingleShiftParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error) {
+	rsp, err := c.NotifySingleShiftWithBody(ctx, id, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseNotifySingleShiftResponse(rsp)
 }
 
-func (c *ClientWithResponses) NotifySingleShiftWithResponse(ctx context.Context, id int, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error) {
-	rsp, err := c.NotifySingleShift(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) NotifySingleShiftWithResponse(ctx context.Context, id int, params *NotifySingleShiftParams, body NotifySingleShiftJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifySingleShiftResponse, error) {
+	rsp, err := c.NotifySingleShift(ctx, id, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6464,16 +6656,16 @@ func (c *ClientWithResponses) NotifySingleShiftWithResponse(ctx context.Context,
 }
 
 // PublishShiftsWithBodyWithResponse request with arbitrary body returning *PublishShiftsResponse
-func (c *ClientWithResponses) PublishShiftsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error) {
-	rsp, err := c.PublishShiftsWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) PublishShiftsWithBodyWithResponse(ctx context.Context, params *PublishShiftsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error) {
+	rsp, err := c.PublishShiftsWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParsePublishShiftsResponse(rsp)
 }
 
-func (c *ClientWithResponses) PublishShiftsWithResponse(ctx context.Context, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error) {
-	rsp, err := c.PublishShifts(ctx, body, reqEditors...)
+func (c *ClientWithResponses) PublishShiftsWithResponse(ctx context.Context, params *PublishShiftsParams, body PublishShiftsJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishShiftsResponse, error) {
+	rsp, err := c.PublishShifts(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6594,16 +6786,16 @@ func (c *ClientWithResponses) ListSitesWithResponse(ctx context.Context, params 
 }
 
 // CreateSiteWithBodyWithResponse request with arbitrary body returning *CreateSiteResponse
-func (c *ClientWithResponses) CreateSiteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error) {
-	rsp, err := c.CreateSiteWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateSiteWithBodyWithResponse(ctx context.Context, params *CreateSiteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error) {
+	rsp, err := c.CreateSiteWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateSiteResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateSiteWithResponse(ctx context.Context, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error) {
-	rsp, err := c.CreateSite(ctx, body, reqEditors...)
+func (c *ClientWithResponses) CreateSiteWithResponse(ctx context.Context, params *CreateSiteParams, body CreateSiteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSiteResponse, error) {
+	rsp, err := c.CreateSite(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -7178,6 +7370,9 @@ func ParseListShiftsResponse(rsp *http.Response) (*ListShiftsResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
+			Locations *[]Schedule `json:"locations,omitempty"`
+			Positions *[]Position `json:"positions,omitempty"`
+
 			// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. For each
 			// fetched shift, if it is on a shift chain, we will insert all the shifts on that chain from the
 			// first up to the date specified in the parameter.
@@ -7186,6 +7381,8 @@ func ParseListShiftsResponse(rsp *http.Response) (*ListShiftsResponse, error) {
 			// Shiftchains Any shift chains that the fetched shifts are a part of
 			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
 			Shifts      *[]Shift      `json:"shifts,omitempty"`
+			Sites       *[]Site       `json:"sites,omitempty"`
+			Users       *[]User       `json:"users,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
