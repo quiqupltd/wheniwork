@@ -3020,8 +3020,8 @@ components:
           format: ipv4
           example: 192.168.1.1
         is_default:
-          type: boolean
-          example: false
+          type: integer
+          example: 0task ge
         is_deleted:
           type: boolean
           example: false
@@ -3042,8 +3042,8 @@ components:
           type: boolean
           example: true
         place_id:
-          type: string
-          example: '2'
+          type: integer
+          example: 2
         radius:
           type: integer
           example: 100
@@ -3141,7 +3141,9 @@ components:
           type: string
           format: date-time
           example: Thu, 06 Mar 2016 21:12:14 -0600
+          x-go-type: WIWTime
         updated_at:
           type: string
           format: date-time
           example: Thu, 06 Mar 2016 22:17:14 -0600
+          x-go-type: WIWTime
