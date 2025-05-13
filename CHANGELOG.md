@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added Position entity to schema
+
+### Changed
+
+- Updates shifts response to include additional data, locations, sites and users
+- Error code from string to int
+- Updated some broken field mappings, mainly bool -> int
+- Make sure WUser-Id header is available for more endpoints
+
 ## [v0.6.0] - 2025-05-11
 
 ### Added
