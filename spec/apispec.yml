@@ -263,6 +263,22 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ShiftChain'
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  locations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Schedule'
+                  positions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Position'
+                  sites:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Site'
         '404': *not_found_response
         default: *default_response
 
@@ -1844,7 +1860,7 @@ components:
         error:
           type: string
         code:
-          type: string
+          type: integer
         message:
           type: string
         details:
@@ -1916,6 +1932,9 @@ components:
     Shift:
       type: object
       required:
+        - id
+        - account_id
+        - user_id
         - start_time
         - end_time
         - location_id
@@ -2010,7 +2029,7 @@ components:
           x-go-type: WIWTime
           example: Wed, 26 Apr 2023 11:30:00 -0600
         acknowledged:
-          type: boolean
+          type: integer
           example: 0
           description: If enabled; When the user confirmed the shift
         acknowledged_at:
@@ -3091,3 +3110,38 @@ components:
         sort:
           type: integer
           example: 0
+
+    Position:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 10000
+        account_id:
+          type: integer
+          example: 10000
+        name:
+          type: string
+          example: Dishwasher
+        color:
+          type: string
+          example: cc0000
+        sort:
+          type: integer
+          example: 2
+          description: Custom sort order applied to this position
+        tips_tracking:
+          type: boolean
+          example: true
+          description: |
+            Whether this position tracks tips.
+            Note: the tips feature is needed to use this field.
+        created_at:
+          type: string
+          format: date-time
+          example: Thu, 06 Mar 2016 21:12:14 -0600
+        updated_at:
+          type: string
+          format: date-time
+          example: Thu, 06 Mar 2016 22:17:14 -0600

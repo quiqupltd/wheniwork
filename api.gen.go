@@ -182,7 +182,7 @@ type BulkUserResponse struct {
 
 // Error defines model for Error.
 type Error struct {
-	Code    *string                 `json:"code,omitempty"`
+	Code    *int                    `json:"code,omitempty"`
 	Details *map[string]interface{} `json:"details,omitempty"`
 	Error   *string                 `json:"error,omitempty"`
 	Message *string                 `json:"message,omitempty"`
@@ -274,6 +274,23 @@ type Place struct {
 	UpdatedAt    *WIWTime  `json:"updated_at,omitempty"`
 }
 
+// Position defines model for Position.
+type Position struct {
+	AccountId *int       `json:"account_id,omitempty"`
+	Color     *string    `json:"color,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	Id        *int       `json:"id,omitempty"`
+	Name      *string    `json:"name,omitempty"`
+
+	// Sort Custom sort order applied to this position
+	Sort *int `json:"sort,omitempty"`
+
+	// TipsTracking Whether this position tracks tips.
+	// Note: the tips feature is needed to use this field.
+	TipsTracking *bool      `json:"tips_tracking,omitempty"`
+	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
+}
+
 // Schedule defines model for Schedule.
 type Schedule struct {
 	AccountId      *int       `json:"account_id,omitempty"`
@@ -317,10 +334,10 @@ type ScheduleRequest struct {
 
 // Shift defines model for Shift.
 type Shift struct {
-	AccountId *int `json:"account_id,omitempty"`
+	AccountId int `json:"account_id"`
 
 	// Acknowledged If enabled; When the user confirmed the shift
-	Acknowledged *bool `json:"acknowledged,omitempty"`
+	Acknowledged *int `json:"acknowledged,omitempty"`
 
 	// AcknowledgedAt If enabled; When the user confirmed the shift
 	AcknowledgedAt *WIWTime `json:"acknowledged_at,omitempty"`
@@ -382,7 +399,7 @@ type Shift struct {
 	UpdatedAt     *WIWTime `json:"updated_at,omitempty"`
 
 	// UserId The user assigned to the shift. Set to `0` for an Open Shift.
-	UserId *int `json:"user_id,omitempty"`
+	UserId int `json:"user_id"`
 }
 
 // ShiftAssignRequest defines model for ShiftAssignRequest.
@@ -5525,6 +5542,9 @@ type ListShiftsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
+		Locations *[]Schedule `json:"locations,omitempty"`
+		Positions *[]Position `json:"positions,omitempty"`
+
 		// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. For each
 		// fetched shift, if it is on a shift chain, we will insert all the shifts on that chain from the
 		// first up to the date specified in the parameter.
@@ -5533,6 +5553,8 @@ type ListShiftsResponse struct {
 		// Shiftchains Any shift chains that the fetched shifts are a part of
 		Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
 		Shifts      *[]Shift      `json:"shifts,omitempty"`
+		Sites       *[]Site       `json:"sites,omitempty"`
+		Users       *[]User       `json:"users,omitempty"`
 	}
 	JSON404     *Error
 	JSONDefault *Error
@@ -7348,6 +7370,9 @@ func ParseListShiftsResponse(rsp *http.Response) (*ListShiftsResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
+			Locations *[]Schedule `json:"locations,omitempty"`
+			Positions *[]Position `json:"positions,omitempty"`
+
 			// RepeatingShifts This field will be present if the `include_repeating_shifts_to` parameter is provided. For each
 			// fetched shift, if it is on a shift chain, we will insert all the shifts on that chain from the
 			// first up to the date specified in the parameter.
@@ -7356,6 +7381,8 @@ func ParseListShiftsResponse(rsp *http.Response) (*ListShiftsResponse, error) {
 			// Shiftchains Any shift chains that the fetched shifts are a part of
 			Shiftchains *[]ShiftChain `json:"shiftchains,omitempty"`
 			Shifts      *[]Shift      `json:"shifts,omitempty"`
+			Sites       *[]Site       `json:"sites,omitempty"`
+			Users       *[]User       `json:"users,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
